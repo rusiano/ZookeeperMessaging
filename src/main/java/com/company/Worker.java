@@ -38,6 +38,19 @@ public class Worker implements Watcher {
         } catch (Exception e) { e.printStackTrace(); }
     }
 
+    public void confirmRemoval(String path) {
+        try {
+            if("1".equals(getData(path)) || "2".equals(getData(path))) {
+                System.out.println("Firing Cleaning (NO DEVELOPED)");
+                this.zoo.delete(path,-1);
+            }
+            else
+                //Error in Master. Setting watcher again
+                zoo.exists("/request/quit/" + id.toString(), this);
+
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+
     public void leaveEnrollment() throws KeeperException, InterruptedException {
         if (null != zoo.exists("/request/quit/" + id.toString(), null))
             return;
@@ -68,6 +81,8 @@ public class Worker implements Watcher {
         else if (watchedEvent.getType() == Event.EventType.NodeDataChanged)
             if (watchedEvent.getPath().contains("enroll"))
                 confirmEnrollment(watchedEvent.getPath());
+            else if (watchedEvent.getPath().contains("quit"))
+                confirmRemoval(watchedEvent.getPath());
             else
                 System.out.println("ERROR: Event NodeDataChanged detected on" + watchedEvent.getPath());
 
