@@ -2,13 +2,17 @@ package com.company;
 
 import org.apache.zookeeper.*;
 
-public class Worker implements Watcher {
+import java.io.IOException;
+
+public class Worker implements Watcher, Runnable {
 
     private Long id;
     private ZooKeeper zoo;
+    BasicWatcher watcher = new BasicWatcher();
 
-    public Worker(ZooKeeper zoo) {
-        this.zoo = zoo;
+    public Worker(String host) throws IOException, InterruptedException{
+        int sessionTimeout = 3000;
+        this.zoo = new ZooKeeper(host, sessionTimeout , null);
     }
 
     //Assigns unique ID based on thread ID
@@ -28,7 +32,7 @@ public class Worker implements Watcher {
     public void confirmEnrollment(String path) {
         try {
             if("1".equals(getData(path)) || "2".equals(getData(path))) {
-                System.out.println("Firing Communication (NO DEVELOPED)");
+                System.out.println("-Firing Communication (NO DEVELOPED)-");
                 this.zoo.delete(path,-1);
             }
             else
@@ -36,12 +40,13 @@ public class Worker implements Watcher {
                 zoo.exists("/request/enroll/" + id.toString(), this);
 
         } catch (Exception e) { e.printStackTrace(); }
+        System.out.println("Worker "+id + "confirm its enrollment");
     }
 
     public void confirmRemoval(String path) {
         try {
             if("1".equals(getData(path)) || "2".equals(getData(path))) {
-                System.out.println("Firing Cleaning (NO DEVELOPED)");
+                System.out.println("-Firing Cleaning (NO DEVELOPED)-");
                 this.zoo.delete(path,-1);
             }
             else
@@ -49,6 +54,7 @@ public class Worker implements Watcher {
                 zoo.exists("/request/quit/" + id.toString(), this);
 
         } catch (Exception e) { e.printStackTrace(); }
+        System.out.println("Worker "+id + "confirm its removal");
     }
 
     public void leaveEnrollment() throws KeeperException, InterruptedException {
@@ -75,6 +81,8 @@ public class Worker implements Watcher {
 
     @Override
     public void process(WatchedEvent watchedEvent) {
+        //System.out.println("Evento"+watchedEvent.getPath()+watchedEvent.getType());
+
         if (watchedEvent.getType() == Event.EventType.NodeDeleted)
             System.out.println(watchedEvent.getPath() + " deleted");//Fire data cleaning
 
@@ -93,15 +101,16 @@ public class Worker implements Watcher {
             System.out.println("Error on "+ watchedEvent.getPath() + " with event " + watchedEvent.getType());
     }
 
-
+    @Override
     public void run() {
         try {
 
             assignId();
 
             askEnrollment();
-
-            Thread.sleep(1000);
+            System.out.println("Worker "+id + "waiting for getting accepted");
+            for(int i = 0; i < 1; i++)
+                Thread.sleep(1000);
 
             leaveEnrollment();
 
