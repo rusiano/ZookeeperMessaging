@@ -1,7 +1,6 @@
 package com.company;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
@@ -13,54 +12,31 @@ import org.apache.zookeeper.data.Stat;
 public class Master implements Watcher{
 
     private ZooKeeper zoo;
-    private String host;
 
-    public static void main(String[] args) throws InterruptedException, KeeperException, IOException {
-
-        Master master = new Master();
-
-        // setup connection to Zookeeper
-        master.setupConnection();
-
-        // create tree structure
-        master.removeTreeStructure(); //For fresh initialization
-        master.createTreeStructure();
-
-
-        master.addWatchers();
-
-        // Runnable interface (parallel)
-            Worker w1 = new Worker(master.host);
-            w1.run();
-
-        for(int i = 0; i < 5; i++)
-            Thread.sleep(1000);
-
+    Master() throws IOException, InterruptedException, KeeperException {
+        this.zoo = ZooMsg.setupConnection();    // Connects to ZooKeeper service
+        this.removeTreeStructure();             // Removes previous tree structure
+        this.createTreeStructure();             // Creates a new clean tree structure
     }
 
-    private void setupConnection() throws IOException, InterruptedException {
-
-        this.host = "localhost:2181";
-        int sessionTimeout = 3000;
-        final CountDownLatch connectionLatch = new CountDownLatch(1);
-
-        //create a connection
-        zoo = new ZooKeeper(host, sessionTimeout , new Watcher() {
-
-            @Override
-            public void process(WatchedEvent we) {
-
-                if(we.getState() == Event.KeeperState.SyncConnected){
-                    connectionLatch.countDown();
-                }
-
-            }
-        });
-
-        connectionLatch.await(10, TimeUnit.SECONDS);
-
+    /**
+     * Removes previous tree structure (if exists).
+     * @throws KeeperException
+     * @throws InterruptedException
+     */
+    private void removeTreeStructure() throws KeeperException, InterruptedException {
+        // create REGITRY node as protected: only master has access to users' information
+        String auth = "user:pwd";
+        zoo.addAuthInfo("digest", auth.getBytes());;
+        deleteSubtree("/request");
+        deleteSubtree("/registry");
     }
 
+    /**
+     * Creates a new clean tree structure.
+     * @throws KeeperException
+     * @throws InterruptedException
+     */
     private void createTreeStructure() throws KeeperException, InterruptedException {
 
         // create REQUEST node with two children: ENROLL and QUIT
@@ -73,47 +49,63 @@ public class Master implements Watcher{
         zoo.addAuthInfo("digest", auth.getBytes());
         zoo.create("/registry", "znode".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
 
+        // add all necessary watchers
+        this.setWatchers();
+
     }
 
-    private void recursiveDelete(String path)  throws KeeperException, InterruptedException {
-        if((zoo.exists(path, null) == (Stat)null))
-            return;
+    /**
+     * Sets up all necessary watchers.
+     */
+    private void setWatchers(){
 
-        List <String> children = zoo.getChildren(path, false);
-
-        if(children == null || children.isEmpty()) {
-            zoo.delete(path, -1);
-            return;
-        }
-
-        for(Iterator<String> iterator = children.iterator(); iterator.hasNext();)
-            recursiveDelete(path + '/' +iterator.next());
-
-        zoo.delete(path, -1);
-    }
-
-    private void removeTreeStructure() throws KeeperException, InterruptedException {
-        // create REGITRY node as protected: only master has access to users' information
-        String auth = "user:pwd";
-        zoo.addAuthInfo("digest", auth.getBytes());;
-        recursiveDelete("/request");
-        recursiveDelete("/registry");
-    }
-
-    private void addWatchers(){
         try {
 
             //Set watchers on request enroll and quit
-            //BasicWatcher watcher = new BasicWatcher();
             zoo.getChildren("/request/enroll", this);
             zoo.getChildren("/request/quit", this);
 
         } catch (Exception e) { e.printStackTrace(); }
+
     }
 
-    //Return the value of the node of the specified path, if any error occurrs then returns null
-    private String getData(String path) {
-        String value = null;
+
+    /**
+     * The method recursively deletes all the subtree that has as its root the node specified in input.
+     * @param rootPath Path of the root node whose subtree has to be deleted
+     * @throws KeeperException
+     * @throws InterruptedException
+     */
+    private void deleteSubtree(String rootPath)  throws KeeperException, InterruptedException {
+
+        // if the path is invalid: do nothing
+        if ((zoo.exists(rootPath, null) == null))
+            return;
+
+        List <String> children = zoo.getChildren(rootPath, false);
+
+        // if the node is a leaf: remove the node and stop
+        if (children == null || children.isEmpty()) {
+            zoo.delete(rootPath, -1);
+            return;
+        }
+
+        // otherwise iterate over the children and recursively delete all their subtrees
+        for (String aChildren : children) deleteSubtree(rootPath + '/' + aChildren);
+
+        // when all the childrens and their subtrees are deleted, delete also the root
+        zoo.delete(rootPath, -1);
+
+    }
+
+    /**
+     * Given the path of a node, the method return its data. In case of exceptions it returns null.
+     * @param path Complete path of the node
+     * @return String
+     */
+    private String getNodeData(String path) {
+
+        String value;
         try {
             value = new String(zoo.getData(path, null, null), "UTF-8");
         } catch (Exception e) {
@@ -123,61 +115,81 @@ public class Master implements Watcher{
         return value;
     }
 
-    public void manageRequest(String path){
+    /**
+     * The method handles the enrollment and deletion requests that are caught by the watcher on "Request" znode.
+     * Please remember that requests come in the form of children of the request node (input path);
+     * among all the children, the new ones correspond to new requests, i.e. requests to process.
+     * @param path The request znode path
+     */
+    private void manageRequest(String path){
+
         try {
 
-            //Request are considered child nodes, we need to get the new nodes
-            String child_path = "";
+            // Get the first child that has the NEW_CHILD_CODE (newly created -> to process)
+            String childPath = "";
             List <String> children = zoo.getChildren(path, null);
-            for(Iterator<String> iterator = children.iterator(); iterator.hasNext();){
-                child_path = iterator.next();
-                if("-1".getBytes().equals(getData(path)))
+            for (String child : children) {
+                childPath = path + '/' + child;
+                if (ZooMsg.NEW_CHILD_CODE.equals(this.getNodeData(childPath)))
                     break;
             }
-            path = path + '/'+ child_path;
 
-            //We check if the child node retrieved was indeed the new one ("-1" value)
-            //If so we continue with the specification
-            if ("-1".equals(getData(path))){
-                if (path.contains("enroll")) {
-                    String new_path = path.replace("request/enroll", "registry");
+            //We check if the child node retrieved was indeed the new one ("-1" value):
+            // if so we continue with the corresponding specification
+            if (ZooMsg.NEW_CHILD_CODE.equals(this.getNodeData(childPath))){
+
+                if (childPath.contains("enroll")) {
+
+                    // Change requestPath (/request/enroll/idXXX) into registryPath (/registry/idXXX)
+                    String registryPath = childPath.replace("request/enroll", "registry");
+
+                    // Try to register the user: catch exceptions for already registered users
                     try {
-                        zoo.create(new_path, "0".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
+                        zoo.create(registryPath, "0".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
                     } catch (KeeperException.NodeExistsException e1) {
-                        zoo.setData(path, "2".getBytes(), -1);
+                        zoo.setData(childPath, ZooMsg.NO_NODE_CODE.getBytes(), -1);
                         return;
                     } catch (Exception e1) {
-                        zoo.setData(path, "0".getBytes(), -1);
+                        zoo.setData(childPath, ZooMsg.EXCEPTION_CODE.getBytes(), -1);
                         return;
                     }
-                    zoo.setData(path, "1".getBytes(), -1);
-                } else if (path.contains("quit")) {
-                    String new_path = path.replace("request/quit", "registry");
+
+                    // If no exception is raised, change the code of the node to confirm successful request processing
+                    zoo.setData(childPath, ZooMsg.SUCCESS_CODE.getBytes(), -1);
+
+                } else if (childPath.contains("quit")) {
+
+                    String new_path = childPath.replace("request/quit", "registry");
+
                     try {
                         zoo.delete(new_path, -1);
                     } catch (KeeperException.NoNodeException e1) {
-                        zoo.setData(path, "2".getBytes(), -1);
+                        zoo.setData(childPath, ZooMsg.NO_NODE_CODE.getBytes(), -1);
                         return;
                     } catch (Exception e1) {
-                        zoo.setData(path, "0".getBytes(), -1);
+                        zoo.setData(childPath, ZooMsg.EXCEPTION_CODE.getBytes(), -1);
                         return;
                     }
-                    zoo.setData(path, "1".getBytes(), -1);
+
+                    // If no exception is raised, change the code of the node to confirm successful request processing
+                    zoo.setData(childPath, ZooMsg.SUCCESS_CODE.getBytes(), -1);
+
                 }
             }
             else
                 System.out.println("Something went wrong with watcher data manipulation on Master");
 
-            //Set again watcher
-            addWatchers();
+            // Set again watcher
+            this.setWatchers();
 
         } catch (Exception e) { e.printStackTrace(); }
+
     }
 
     @Override
     public void process(WatchedEvent event) {
 
-        //System.out.println("Evento cogido por el Master"+ event.getPath() + " " + event.toString());
+        //ZooMsg.out.println("Evento cogido por el Master"+ event.getPath() + " " + event.toString());
 
         if (event.getType() == Event.EventType.NodeChildrenChanged)
             if(event.getPath().contains("/request"))

@@ -8,19 +8,17 @@ public class Worker implements Watcher, Runnable {
 
     private Long id;
     private ZooKeeper zoo;
-    BasicWatcher watcher = new BasicWatcher();
 
-    public Worker(String host) throws IOException, InterruptedException{
-        int sessionTimeout = 3000;
-        this.zoo = new ZooKeeper(host, sessionTimeout , null);
+    Worker(String host) throws IOException, InterruptedException{
+        this.zoo = ZooMsg.setupConnection();
     }
 
     //Assigns unique ID based on thread ID
-    public void assignId() {
-        this.id = new Long(Thread.currentThread().getId());
+    private void assignId() {
+        this.id = Thread.currentThread().getId();
     }
 
-    public void askEnrollment() throws KeeperException, InterruptedException {
+    private void askEnrollment() throws KeeperException, InterruptedException {
         if (null != zoo.exists("/request/enroll/" + id.toString(), null))
             return;
         zoo.create("/request/enroll/" + id.toString(), "-1".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
@@ -29,7 +27,7 @@ public class Worker implements Watcher, Runnable {
         zoo.exists("/request/enroll/" + id.toString(), this);
     }
 
-    public void confirmEnrollment(String path) {
+    private void confirmEnrollment(String path) {
         try {
             if("1".equals(getData(path)) || "2".equals(getData(path))) {
                 System.out.println("-Firing Communication (NO DEVELOPED)-");
@@ -43,7 +41,7 @@ public class Worker implements Watcher, Runnable {
         System.out.println("Worker "+id + "confirm its enrollment");
     }
 
-    public void confirmRemoval(String path) {
+    private void confirmRemoval(String path) {
         try {
             if("1".equals(getData(path)) || "2".equals(getData(path))) {
                 System.out.println("-Firing Cleaning (NO DEVELOPED)-");
@@ -57,7 +55,7 @@ public class Worker implements Watcher, Runnable {
         System.out.println("Worker "+id + "confirm its removal");
     }
 
-    public void leaveEnrollment() throws KeeperException, InterruptedException {
+    private void leaveEnrollment() throws KeeperException, InterruptedException {
         if (null != zoo.exists("/request/quit/" + id.toString(), null))
             return;
         zoo.create("/request/quit/" + id.toString(), "-1".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
@@ -68,7 +66,7 @@ public class Worker implements Watcher, Runnable {
 
     //Return the value of the node of the specified path, if any error occurrs then returns null
     private String getData(String path) {
-        String value = null;
+        String value;
         try {
             value = new String(zoo.getData(path, null, null), "UTF-8");
         } catch (Exception e) {
@@ -95,7 +93,7 @@ public class Worker implements Watcher, Runnable {
                 System.out.println("ERROR: Event NodeDataChanged detected on" + watchedEvent.getPath());
 
         else if (watchedEvent.getType() == Event.EventType.NodeCreated)
-                id = id; //Fire starting communication
+            id = id; //Fire starting communication
 
         else
             System.out.println("Error on "+ watchedEvent.getPath() + " with event " + watchedEvent.getType());
