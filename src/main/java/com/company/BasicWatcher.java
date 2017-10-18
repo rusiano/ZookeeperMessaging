@@ -10,15 +10,15 @@ public class BasicWatcher implements Watcher {
     public void process(WatchedEvent event) {
 
         if (event.getType() == EventType.NodeCreated) {
-            ZooMsg.out.println(event.getPath() + " created");
+            System.out.println(event.getPath() + " created");
         } else if (event.getType() == EventType.NodeDeleted) {
-            ZooMsg.out.println(event.getPath() + " deleted");
+            System.out.println(event.getPath() + " deleted");
         } else if (event.getType() == EventType.NodeDataChanged) {
-            ZooMsg.out.println(event.getPath() + " changed");
+            System.out.println(event.getPath() + " changed");
         } else if (event.getType() == EventType.NodeChildrenChanged) {
-            ZooMsg.out.println(event.getPath() + " children created");
+            System.out.println(event.getPath() + " children created");
         } else {
-            ZooMsg.out.println(event.getPath() + " what is this??");
+            System.out.println(event.getPath() + " what is this??");
         }
 
     }

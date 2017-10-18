@@ -11,11 +11,15 @@ import java.util.concurrent.TimeUnit;
 
 public class ZooMsg {
 
-    final static String NEW_CHILD_CODE = "-1";
-    final static String EXCEPTION_CODE = "0";
-    final static String SUCCESS_CODE = "1";
-    final static String NO_NODE_CODE = "2";
-    final static String HOST = "localhost:2181";
+    interface Codes {
+        byte[] NEW_CHILD = "-1".getBytes();
+        byte[] EXCEPTION = "0".getBytes();
+        byte[] SUCCESS = "1".getBytes();
+        byte[] NODE_EXISTS = "2".getBytes();
+    }
+
+
+    private final static String HOST = "localhost:2181";
 
 
     public static void main(String[] args) throws InterruptedException, KeeperException, IOException {
@@ -23,7 +27,7 @@ public class ZooMsg {
         Master master = new Master();
 
         // Runnable interface (parallel)
-        Worker w1 = new Worker(HOST);
+        Worker w1 = new Worker();
         w1.run();
 
         for(int i = 0; i < 5; i++)
@@ -52,6 +56,23 @@ public class ZooMsg {
         connectionLatch.await(10, TimeUnit.SECONDS);
 
         return zoo;
+    }
+
+    /**
+     * Given the path of a node, the method return its data. In case of exceptions it returns null.
+     * @param path Complete path of the node
+     * @return String
+     */
+    static byte[] getNodeCode(ZooKeeper zoo, String path) {
+
+        byte[] code;
+        try {
+            code = zoo.getData(path, null, null);
+        } catch (Exception e) {
+            code = null;
+        }
+
+        return code;
     }
 
 }

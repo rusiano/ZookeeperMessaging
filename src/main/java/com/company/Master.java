@@ -1,13 +1,9 @@
 package com.company;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 import org.apache.zookeeper.*;
-import org.apache.zookeeper.data.Stat;
-
 
 public class Master implements Watcher{
 
@@ -21,21 +17,21 @@ public class Master implements Watcher{
 
     /**
      * Removes previous tree structure (if exists).
-     * @throws KeeperException
-     * @throws InterruptedException
+     * @throws KeeperException -
+     * @throws InterruptedException -
      */
     private void removeTreeStructure() throws KeeperException, InterruptedException {
         // create REGITRY node as protected: only master has access to users' information
         String auth = "user:pwd";
-        zoo.addAuthInfo("digest", auth.getBytes());;
+        zoo.addAuthInfo("digest", auth.getBytes());
         deleteSubtree("/request");
         deleteSubtree("/registry");
     }
 
     /**
      * Creates a new clean tree structure.
-     * @throws KeeperException
-     * @throws InterruptedException
+     * @throws KeeperException -
+     * @throws InterruptedException -
      */
     private void createTreeStructure() throws KeeperException, InterruptedException {
 
@@ -73,8 +69,8 @@ public class Master implements Watcher{
     /**
      * The method recursively deletes all the subtree that has as its root the node specified in input.
      * @param rootPath Path of the root node whose subtree has to be deleted
-     * @throws KeeperException
-     * @throws InterruptedException
+     * @throws KeeperException -
+     * @throws InterruptedException -
      */
     private void deleteSubtree(String rootPath)  throws KeeperException, InterruptedException {
 
@@ -98,22 +94,6 @@ public class Master implements Watcher{
 
     }
 
-    /**
-     * Given the path of a node, the method return its data. In case of exceptions it returns null.
-     * @param path Complete path of the node
-     * @return String
-     */
-    private String getNodeData(String path) {
-
-        String value;
-        try {
-            value = new String(zoo.getData(path, null, null), "UTF-8");
-        } catch (Exception e) {
-            value = null;
-        }
-
-        return value;
-    }
 
     /**
      * The method handles the enrollment and deletion requests that are caught by the watcher on "Request" znode.
@@ -125,18 +105,18 @@ public class Master implements Watcher{
 
         try {
 
-            // Get the first child that has the NEW_CHILD_CODE (newly created -> to process)
+            // Get the first child that has the NEW_CHILD code (newly created -> to process)
             String childPath = "";
             List <String> children = zoo.getChildren(path, null);
             for (String child : children) {
                 childPath = path + '/' + child;
-                if (ZooMsg.NEW_CHILD_CODE.equals(this.getNodeData(childPath)))
+                if (Arrays.equals(ZooMsg.Codes.NEW_CHILD, ZooMsg.getNodeCode(zoo, childPath)))
                     break;
             }
 
             //We check if the child node retrieved was indeed the new one ("-1" value):
             // if so we continue with the corresponding specification
-            if (ZooMsg.NEW_CHILD_CODE.equals(this.getNodeData(childPath))){
+            if (Arrays.equals(ZooMsg.Codes.NEW_CHILD, ZooMsg.getNodeCode(zoo, childPath))){
 
                 if (childPath.contains("enroll")) {
 
@@ -147,15 +127,15 @@ public class Master implements Watcher{
                     try {
                         zoo.create(registryPath, "0".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
                     } catch (KeeperException.NodeExistsException e1) {
-                        zoo.setData(childPath, ZooMsg.NO_NODE_CODE.getBytes(), -1);
+                        zoo.setData(childPath, ZooMsg.Codes.NODE_EXISTS, -1);
                         return;
                     } catch (Exception e1) {
-                        zoo.setData(childPath, ZooMsg.EXCEPTION_CODE.getBytes(), -1);
+                        zoo.setData(childPath, ZooMsg.Codes.EXCEPTION, -1);
                         return;
                     }
 
                     // If no exception is raised, change the code of the node to confirm successful request processing
-                    zoo.setData(childPath, ZooMsg.SUCCESS_CODE.getBytes(), -1);
+                    zoo.setData(childPath, ZooMsg.Codes.SUCCESS, -1);
 
                 } else if (childPath.contains("quit")) {
 
@@ -164,15 +144,15 @@ public class Master implements Watcher{
                     try {
                         zoo.delete(new_path, -1);
                     } catch (KeeperException.NoNodeException e1) {
-                        zoo.setData(childPath, ZooMsg.NO_NODE_CODE.getBytes(), -1);
+                        zoo.setData(childPath, ZooMsg.Codes.NODE_EXISTS, -1);
                         return;
                     } catch (Exception e1) {
-                        zoo.setData(childPath, ZooMsg.EXCEPTION_CODE.getBytes(), -1);
+                        zoo.setData(childPath, ZooMsg.Codes.EXCEPTION, -1);
                         return;
                     }
 
                     // If no exception is raised, change the code of the node to confirm successful request processing
-                    zoo.setData(childPath, ZooMsg.SUCCESS_CODE.getBytes(), -1);
+                    zoo.setData(childPath, ZooMsg.Codes.SUCCESS, -1);
 
                 }
             }
@@ -202,7 +182,7 @@ public class Master implements Watcher{
 }
 
 
-/** Valerio's code *********************************************************************************************
+/* Valerio's code *********************************************************************************************
  //create znode
  zoo.create("/test", "znode".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
  //create znode sequential
