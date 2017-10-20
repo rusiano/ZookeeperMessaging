@@ -101,108 +101,89 @@ public class Master implements Watcher{
      * among all the children, the new ones correspond to new requests, i.e. requests to process.
      * @param path The request znode path
      */
-    private void manageRequest(String path){
+    private void manageRequest(String path) throws KeeperException, InterruptedException {
 
-        try {
 
-            // Get the first child that has the NEW_CHILD code (newly created -> to process)
-            String childPath = "";
-            List <String> children = zoo.getChildren(path, null);
-            for (String child : children) {
-                childPath = path + '/' + child;
-                if (Arrays.equals(ZooMsg.Codes.NEW_CHILD, ZooMsg.getNodeCode(zoo, childPath)))
-                    break;
+        // Get the first child that has the NEW_CHILD code (newly created -> to process)
+        String childPath = "";
+        List <String> children = zoo.getChildren(path, null);
+        for (String child : children) {
+            childPath = path + '/' + child;
+            if (Arrays.equals(ZooMsg.Codes.NEW_CHILD, ZooMsg.getNodeCode(zoo, childPath)))
+                break;
+        }
+
+
+        // If child node retrieved is not the new node, notify error and return
+        if (!Arrays.equals(ZooMsg.Codes.NEW_CHILD, ZooMsg.getNodeCode(zoo, childPath))){
+            System.out.println("ERROR Manager Request:No valid node in" + path);
+            return;
+        }
+
+
+        // We continue with the corresponding specification
+
+        // If the child was created or changed in '/request/enroll' process action register
+        if (childPath.contains("enroll")) {
+
+            // Change requestPath (/request/enroll/idXXX) into registryPath (/registry/idXXX)
+            String registryPath = childPath.replace("request/enroll", "registry");
+
+            // Try to register the user: catch exceptions for already registered users
+            try {
+                zoo.create(registryPath, "0".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
+            } catch (KeeperException.NodeExistsException e1) {
+                zoo.setData(childPath, ZooMsg.Codes.NODE_EXISTS, -1);
+                return;
+            } catch (Exception e1) {
+                zoo.setData(childPath, ZooMsg.Codes.EXCEPTION, -1);
+                return;
             }
 
-            //We check if the child node retrieved was indeed the new one ("-1" value):
-            // if so we continue with the corresponding specification
-            if (Arrays.equals(ZooMsg.Codes.NEW_CHILD, ZooMsg.getNodeCode(zoo, childPath))){
+            // If no exception is raised, change the code of the node to confirm successful request processing
+            zoo.setData(childPath, ZooMsg.Codes.SUCCESS, -1);
 
-                if (childPath.contains("enroll")) {
+        // If the child was created or changed in '/request/quit' process action quit
+        } else if (childPath.contains("quit")) {
 
-                    // Change requestPath (/request/enroll/idXXX) into registryPath (/registry/idXXX)
-                    String registryPath = childPath.replace("request/enroll", "registry");
+            String new_path = childPath.replace("request/quit", "registry");
 
-                    // Try to register the user: catch exceptions for already registered users
-                    try {
-                        zoo.create(registryPath, "0".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
-                    } catch (KeeperException.NodeExistsException e1) {
-                        zoo.setData(childPath, ZooMsg.Codes.NODE_EXISTS, -1);
-                        return;
-                    } catch (Exception e1) {
-                        zoo.setData(childPath, ZooMsg.Codes.EXCEPTION, -1);
-                        return;
-                    }
-
-                    // If no exception is raised, change the code of the node to confirm successful request processing
-                    zoo.setData(childPath, ZooMsg.Codes.SUCCESS, -1);
-
-                } else if (childPath.contains("quit")) {
-
-                    String new_path = childPath.replace("request/quit", "registry");
-
-                    try {
-                        zoo.delete(new_path, -1);
-                    } catch (KeeperException.NoNodeException e1) {
-                        zoo.setData(childPath, ZooMsg.Codes.NODE_EXISTS, -1);
-                        return;
-                    } catch (Exception e1) {
-                        zoo.setData(childPath, ZooMsg.Codes.EXCEPTION, -1);
-                        return;
-                    }
-
-                    // If no exception is raised, change the code of the node to confirm successful request processing
-                    zoo.setData(childPath, ZooMsg.Codes.SUCCESS, -1);
-
-                }
+            try {
+                zoo.delete(new_path, -1);
+            } catch (KeeperException.NoNodeException e1) {
+                zoo.setData(childPath, ZooMsg.Codes.NODE_EXISTS, -1);
+                return;
+            } catch (Exception e1) {
+                zoo.setData(childPath, ZooMsg.Codes.EXCEPTION, -1);
+                return;
             }
-            else
-                System.out.println("Something went wrong with watcher data manipulation on Master");
 
-            // Set again watcher
-            this.setWatchers();
+            // If no exception is raised, change the code of the node to confirm successful request processing
+            zoo.setData(childPath, ZooMsg.Codes.SUCCESS, -1);
 
-        } catch (Exception e) { e.printStackTrace(); }
+        }
+
+        // Set again watcher
+        this.setWatchers();
 
     }
 
+
+    /**
+     * The method handles the enrollment and deletion requests that are caught by the watcher on "Request" znode.
+     * Please remember that requests come in the form of children of the request node (input path);
+     * among all the children, the new ones correspond to new requests, i.e. requests to process.
+     * @param event The instance of the watchedevent including status, type and path
+     */
     @Override
     public void process(WatchedEvent event) {
 
-        //ZooMsg.out.println("Evento cogido por el Master"+ event.getPath() + " " + event.toString());
+        //ZooMsg.out.println("Event catch by Master, node from "+ event.getPath() + " full specs: " + event.toString());
 
-        if (event.getType() == Event.EventType.NodeChildrenChanged)
-            if(event.getPath().contains("/request"))
-                manageRequest(event.getPath());
-            else
-                System.out.println("Created node"+ event.getPath() +"NOT EXPECTED");
+        // Watcher triggered in the path '/request' due to child znode changed => manage request(action register or quit)
+        if (event.getPath().contains("/request") && event.getType() == Event.EventType.NodeChildrenChanged)
+            try { manageRequest(event.getPath()); } catch (Exception e) { e.printStackTrace(); }
+        else
+            System.out.println("Event type "+ event.getType() +" in path "+ event.getPath() +" NOT EXPECTED");
     }
-
-
 }
-
-
-/* Valerio's code *********************************************************************************************
- //create znode
- zoo.create("/test", "znode".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
- //create znode sequential
- zoo.create("/test/sequential", "znode_sequential".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT_SEQUENTIAL);
- //create znode ephemereal
- zoo.create("/test/ephemeral", "znode_ephemeral".getBytes(), ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-
- String auth = "user:pwd";
- zoo.addAuthInfo("digest", auth.getBytes());
- //create protected node
- zoo.create("/test/protected", "znode".getBytes(), ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
-
- //set a watcher
- BasicWatcher w = new BasicWatcher();
- //zoo.getData("/test/ephemeral", w, null);
-
- //fire the watcher
- //zoo.setData("/test/ephemeral", "changed value".getBytes(), -1);
-
- //delete protected node
- //zoo.delete("/test/protected", -1);
- ***************************************************************************************************************/
-

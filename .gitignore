@@ -1,0 +1,10 @@
+# Intellij Files
+# .idea
+
+# Compiled files
+*.class
+
+# Temporal files
+~*
+*.copy
+*.old
