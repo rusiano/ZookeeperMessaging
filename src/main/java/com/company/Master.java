@@ -21,7 +21,7 @@ public class Master implements Watcher{
      * @throws InterruptedException -
      */
     private void removeTreeStructure() throws KeeperException, InterruptedException {
-        // create REGITRY node as protected: only master has access to users' information
+        // Only master has access to REGISTRY node
         String auth = "user:pwd";
         zoo.addAuthInfo("digest", auth.getBytes());
         deleteSubtree("/request");
@@ -74,22 +74,19 @@ public class Master implements Watcher{
      */
     private void deleteSubtree(String rootPath)  throws KeeperException, InterruptedException {
 
-        // if the path is invalid: do nothing
-        if ((zoo.exists(rootPath, null) == null))
-            return;
-
-        List <String> children = zoo.getChildren(rootPath, false);
-
-        // if the node is a leaf: remove the node and stop
-        if (children == null || children.isEmpty()) {
-            zoo.delete(rootPath, -1);
+        // If non-existing node => warns and exits
+        if(zoo.exists(rootPath, false) == null) {
+            System.out.println("WARNING: trying to delete a NON-existing node in path " + rootPath);
             return;
         }
 
-        // otherwise iterate over the children and recursively delete all their subtrees
+        // Look for children of the given path, null if there is no child
+        List <String> children = zoo.getChildren(rootPath, false); // False => synchronous process, no watcher to manage sync
+
+        // Node is a leaf iff children == null
         for (String aChildren : children) deleteSubtree(rootPath + '/' + aChildren);
 
-        // when all the childrens and their subtrees are deleted, delete also the root
+        // when all the children and their subtrees are deleted, delete also the root
         zoo.delete(rootPath, -1);
 
     }
@@ -104,26 +101,27 @@ public class Master implements Watcher{
     private void manageRequest(String path) throws KeeperException, InterruptedException {
 
 
-        // Get the first child that has the NEW_CHILD code (newly created -> to process)
-        String childPath = "";
+        // Get the last child that has the NEW_CHILD code (newly created -> to process)
+        String childPath = null;
         List <String> children = zoo.getChildren(path, null);
         for (String child : children) {
-            childPath = path + '/' + child;
-            if (Arrays.equals(ZooMsg.Codes.NEW_CHILD, ZooMsg.getNodeCode(zoo, childPath)))
-                break;
+            byte[] child_code = ZooMsg.getNodeCode(zoo, path + '/' + child);
+            if (Arrays.equals(child_code,ZooMsg.Codes.NEW_CHILD))// || Arrays.equals(child_code,ZooMsg.Codes.EXCEPTION))
+                childPath = path + '/' + child;
         }
 
 
-        // If child node retrieved is not the new node, notify error and return
-        if (!Arrays.equals(ZooMsg.Codes.NEW_CHILD, ZooMsg.getNodeCode(zoo, childPath))){
-            System.out.println("ERROR Manager Request:No valid node in" + path);
+        // If child node retrieved is null, there was not new node => removal of previous node
+        // !!!!!!!!! ==> ask teacher if there is a way of avoid this trigger(removal) or easier way of getting the child node !!!!!!!!!!!!!!
+        if (childPath == null){
+            System.out.println("Watcher got from removal in of a child node in path " + path + " ignoring and setting again the watchers");
             return;
         }
 
 
         // We continue with the corresponding specification
 
-        // If the child was created or changed in '/request/enroll' process action register
+        // If the child was created or changed(next steps) in '/request/enroll' process action register
         if (childPath.contains("enroll")) {
 
             // Change requestPath (/request/enroll/idXXX) into registryPath (/registry/idXXX)
@@ -163,27 +161,28 @@ public class Master implements Watcher{
 
         }
 
-        // Set again watcher
-        this.setWatchers();
-
     }
 
 
     /**
-     * The method handles the enrollment and deletion requests that are caught by the watcher on "Request" znode.
-     * Please remember that requests come in the form of children of the request node (input path);
-     * among all the children, the new ones correspond to new requests, i.e. requests to process.
-     * @param event The instance of the watchedevent including status, type and path
+     * This void(process) is inherited from Watcher interface. It is fired each time a watcher (that was set in a node)
+     * changed or some children were created in the path (depending on how the watcher was set). Ref: https://zookeeper.apache.org/doc/trunk/zookeeperProgrammers.html
+     *
+     * It contains the asynchronous logic of the master i.e. a request of enrollment from a worker (creation of a child node in the path /request/enroll)
+     * @param event Event triggered containing type, path and state
      */
     @Override
     public void process(WatchedEvent event) {
 
-        //ZooMsg.out.println("Event catch by Master, node from "+ event.getPath() + " full specs: " + event.toString());
+        //System.out.println("Event catch by Master, node from "+ event.getPath() + " full specs: " + event.toString());
 
         // Watcher triggered in the path '/request' due to child znode changed => manage request(action register or quit)
         if (event.getPath().contains("/request") && event.getType() == Event.EventType.NodeChildrenChanged)
             try { manageRequest(event.getPath()); } catch (Exception e) { e.printStackTrace(); }
         else
             System.out.println("Event type "+ event.getType() +" in path "+ event.getPath() +" NOT EXPECTED");
+
+        // Set the watchers again
+        setWatchers();
     }
 }

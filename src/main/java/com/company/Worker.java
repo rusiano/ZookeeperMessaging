@@ -88,14 +88,20 @@ public class Worker implements Watcher, Runnable {
 
     }
 
+    /**
+     * This process is inherited from Watcher interface. It is fired each time a watcher (that was set in a node)
+     * changed or some children were created in the path (depending on how the watcher was set). Ref: https://zookeeper.apache.org/doc/trunk/zookeeperProgrammers.html
+     *
+     * It contains the asynchronous logic of the worker i.e. the request of enrollment has been processed
+     * @param watchedEvent Event triggered containing path type and state
+     */
     @Override
     public void process(WatchedEvent watchedEvent) {
 
-        // If a node watched changed, checks from where it was produced
         if (watchedEvent.getType() == Event.EventType.NodeDataChanged)
-            if (watchedEvent.getPath().contains("enroll"))    // Node Change in enrollment
+            if (watchedEvent.getPath().contains("enroll"))    // Node Change in enrollment (path)
                 confirmEnrollment(watchedEvent.getPath());
-            else if (watchedEvent.getPath().contains("quit")) // Node Change in quit
+            else if (watchedEvent.getPath().contains("quit")) // Node Change in quit (path)
                 confirmRemoval(watchedEvent.getPath());
             else
                 System.out.println("ERROR: Event NodeDataChanged detected on" + watchedEvent.getPath());
