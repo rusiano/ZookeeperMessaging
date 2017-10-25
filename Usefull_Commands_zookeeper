@@ -1,0 +1,25 @@
+# Useful commands
+
+/op/opt/zookeeper-3.4.9
+## Starting zk	SERVER
+./bin/zkServer.sh start [configuration file - default ./conf/zoo.cfg]
+
+
+## Finish zk SERVER
+./bin/zkServer.sh stop [configuration file - default ./conf/zoo.cfg]
+
+
+## Connecting to client
+./bin/zkCli.sh -server [IP1:PORT1] [, IP2:PORT2]
+
+
+# PORTS=> Update configuration about replica:Lider election
+# server.1=10.10.2.138:8080:80
+
+
+### Inside the client
+ls [path use '/' for root]
+create [path] [value]
+addauth digest [user:pwd]
+
+
