@@ -10,9 +10,9 @@ public class Worker implements Watcher, Runnable {
     private String id;
     private ZooKeeper zoo;
 
-    Worker() throws IOException, InterruptedException {
-        this.zoo = ZooMsg.setupConnection();
-        this.id = String.valueOf(Thread.currentThread().getId());
+    Worker(String HOST, String id) throws IOException, InterruptedException {
+        this.zoo = ZooMsg.setupConnection(HOST);
+        this.id = (id == null || id.equals("")) ? String.valueOf(Thread.currentThread().getId()) : id;
     }
 
     /**
@@ -122,8 +122,8 @@ public class Worker implements Watcher, Runnable {
             System.out.println("Worker "+id + "waiting for getting accepted");
 
             //After requiring enrolment, the process sleeps a little
-            for(int i = 0; i < 1; i++)
-                Thread.sleep(1000);
+            for(int i = 0; i < 10; i++)
+                Thread.sleep(100);
 
             leaveEnrollment();
 

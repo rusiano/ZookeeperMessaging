@@ -24,18 +24,24 @@ public class ZooMsg {
 
     public static void main(String[] args) throws InterruptedException, KeeperException, IOException {
 
-        Master master = new Master();
+        String HOST = "localhost:2181";
+        //String HOST = "10.10.1.229:2181";
+
+        Master master = new Master(HOST);
 
         // Runnable interface (parallel)
-        Worker w1 = new Worker();
+        Worker w1 = new Worker(HOST, "marcos_test");
         w1.run();
 
-        for(int i = 0; i < 5; i++)
-            Thread.sleep(1000);
+        for(int i = 0; i < 5000; i++)
+            Thread.sleep(100);
+
+
+
 
     }
 
-    static ZooKeeper setupConnection() throws IOException, InterruptedException {
+    static ZooKeeper setupConnection(String HOST) throws IOException, InterruptedException {
 
         int sessionTimeout = 3000;
         final CountDownLatch connectionLatch = new CountDownLatch(1);

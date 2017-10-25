@@ -9,8 +9,8 @@ public class Master implements Watcher{
 
     private ZooKeeper zoo;
 
-    Master() throws IOException, InterruptedException, KeeperException {
-        this.zoo = ZooMsg.setupConnection();    // Connects to ZooKeeper service
+    Master(String HOST) throws IOException, InterruptedException, KeeperException {
+        this.zoo = ZooMsg.setupConnection(HOST);    // Connects to ZooKeeper service
         this.removeTreeStructure();             // Removes previous tree structure
         this.createTreeStructure();             // Creates a new clean tree structure
     }
@@ -114,7 +114,11 @@ public class Master implements Watcher{
         // If child node retrieved is null, there was not new node => removal of previous node
         // !!!!!!!!! ==> ask teacher if there is a way of avoid this trigger(removal) or easier way of getting the child node !!!!!!!!!!!!!!
         if (childPath == null){
-            System.out.println("Watcher got from removal in of a child node in path " + path + " ignoring and setting again the watchers");
+            System.out.println("Watcher got from removal or INVALID CODE of a child node in path " + path + " ignoring and setting again the watchers");
+            for (String child : children) {
+                byte[] child_code = ZooMsg.getNodeCode(zoo, path + '/' + child);
+                System.out.println(" - " + path + " with code " + new String (child_code) + " . New node? "+ Arrays.equals(child_code,ZooMsg.Codes.NEW_CHILD));
+            }
             return;
         }
 
@@ -137,6 +141,7 @@ public class Master implements Watcher{
                 zoo.setData(childPath, ZooMsg.Codes.EXCEPTION, -1);
                 return;
             }
+            System.out.println("Worker properly enroll on " + registryPath);
 
             // If no exception is raised, change the code of the node to confirm successful request processing
             zoo.setData(childPath, ZooMsg.Codes.SUCCESS, -1);
@@ -155,6 +160,7 @@ public class Master implements Watcher{
                 zoo.setData(childPath, ZooMsg.Codes.EXCEPTION, -1);
                 return;
             }
+            System.out.println("Worker properly quit on " + childPath);
 
             // If no exception is raised, change the code of the node to confirm successful request processing
             zoo.setData(childPath, ZooMsg.Codes.SUCCESS, -1);
