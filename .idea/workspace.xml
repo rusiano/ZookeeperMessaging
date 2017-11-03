@@ -2,8 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="8690d26d-c88b-4d1a-9d8b-72f6903ed499" name="Default" comment="Create Tree Structure">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_code_findbugs_jsr305_1_3_9.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_errorprone_error_prone_annotations_2_0_18.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_guava_guava_23_3_jre.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__com_google_j2objc_j2objc_annotations_1_1.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/libraries/Maven__org_codehaus_mojo_animal_sniffer_annotations_1_14.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/company/BasicWatcher.java" afterPath="$PROJECT_DIR$/src/main/java/com/company/BasicWatcher.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/ZookeeperMessaging.iml" afterPath="$PROJECT_DIR$/ZookeeperMessaging.iml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/pom.xml" afterPath="$PROJECT_DIR$/pom.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/company/Master.java" afterPath="$PROJECT_DIR$/src/main/java/com/company/Master.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/company/Worker.java" afterPath="$PROJECT_DIR$/src/main/java/com/company/Worker.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/company/ZooMsg.java" afterPath="$PROJECT_DIR$/src/main/java/com/company/ZooMsg.java" />
@@ -19,14 +25,13 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="ZooMsg.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="ZooMsg.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/company/ZooMsg.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="234">
-              <caret line="13" column="4" lean-forward="false" selection-start-line="13" selection-start-column="4" selection-end-line="13" selection-end-column="4" />
+            <state relative-caret-position="-9">
+              <caret line="66" column="19" lean-forward="true" selection-start-line="66" selection-start-column="19" selection-end-line="66" selection-end-column="19" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="docComment;method#getNodeCode#0;class#ZooMsg#0" expanded="false" />
               </folding>
             </state>
           </provider>
@@ -35,28 +40,20 @@
       <file leaf-file-name="Master.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Master.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="172">
-              <caret line="103" column="0" lean-forward="false" selection-start-line="103" selection-start-column="0" selection-end-line="103" selection-end-column="0" />
+            <state relative-caret-position="328">
+              <caret line="290" column="27" lean-forward="true" selection-start-line="290" selection-start-column="27" selection-end-line="290" selection-end-column="27" />
               <folding>
                 <element signature="imports" expanded="true" />
-                <element signature="docComment;method#createTreeStructure#0;class#Master#0" expanded="false" />
-                <element signature="method#createTreeStructure#0;class#Master#0" expanded="false" />
-                <element signature="docComment;method#setWatchers#0;class#Master#0" expanded="false" />
-                <element signature="method#setWatchers#0;class#Master#0" expanded="false" />
-                <element signature="docComment;method#deleteSubtree#0;class#Master#0" expanded="false" />
-                <element signature="method#deleteSubtree#0;class#Master#0" expanded="false" />
-                <element signature="docComment;method#manageRequest#0;class#Master#0" expanded="false" />
-                <element signature="method#manageRequest#0;class#Master#0" expanded="false" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Worker.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Worker.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Worker.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="741">
-              <caret line="84" column="0" lean-forward="false" selection-start-line="84" selection-start-column="0" selection-end-line="84" selection-end-column="0" />
+            <state relative-caret-position="441">
+              <caret line="161" column="0" lean-forward="true" selection-start-line="161" selection-start-column="0" selection-end-line="161" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -86,6 +83,13 @@
       <find>getNodeData</find>
       <find>ZooMsg.</find>
       <find>_CODE</find>
+      <find>create</find>
+      <find>exist</find>
+      <find>onlinePath</find>
+      <find>backupPath</find>
+      <find>watchedEvent.getPath()</find>
+      <find>Event.EventType</find>
+      <find>watcher got</find>
     </findStrings>
     <replaceStrings>
       <replace>System.out</replace>
@@ -97,6 +101,15 @@
       <replace>NODE_EXISTS_CODE</replace>
       <replace>getNodeCode</replace>
       <replace>ZooMsg.Codes.</replace>
+      <replace>enrollPath</replace>
+      <replace>quitPath</replace>
+      <replace>registryUserPath</replace>
+      <replace>onlineUserPath</replace>
+      <replace>queueUserPath</replace>
+      <replace>backupUserPath</replace>
+      <replace>triggerEvent</replace>
+      <replace>triggerPath</replace>
+      <replace>EventType</replace>
     </replaceStrings>
   </component>
   <component name="Git.Settings">
@@ -117,14 +130,15 @@
       <list>
         <option value="$PROJECT_DIR$/src/com/company/Main.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/company/Main.java" />
-        <option value="$PROJECT_DIR$/pom.xml" />
         <option value="$PROJECT_DIR$/target/classes/com/company/Worker.class" />
         <option value="$PROJECT_DIR$/src/main/java/com/company/System.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/company/ZooConnection.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/company/BasicWatcher.java" />
+        <option value="$PROJECT_DIR$/pom.xml" />
+        <option value="$PROJECT_DIR$/src/main/java/com/company/ZooGUI.form" />
+        <option value="$PROJECT_DIR$/src/main/java/com/company/Master.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/company/Worker.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/company/ZooMsg.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/company/Master.java" />
       </list>
     </option>
   </component>
@@ -156,7 +170,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="AndroidView" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -194,14 +207,15 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
-      <pane id="Scratches" />
       <pane id="PackagesPane" />
+      <pane id="AndroidView" />
+      <pane id="Scratches" />
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="settings.editor.selected.configurable" value="reference.settings.project.maven.importing" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../EsperTest" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -215,7 +229,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.Main">
+  <component name="RunManager" selected="Application.ZooMsg">
     <configuration name="Main" type="Application" factoryName="Application" temporary="true">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <option name="MAIN_CLASS_NAME" value="com.company.Master" />
@@ -232,6 +246,25 @@
       <RunnerSettings RunnerId="Run" />
       <ConfigurationWrapper RunnerId="Run" />
     </configuration>
+    <configuration name="ZooMsg" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
+        <pattern>
+          <option name="PATTERN" value="com.company.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="MAIN_CLASS_NAME" value="com.company.ZooMsg" />
+      <option name="VM_PARAMETERS" />
+      <option name="PROGRAM_PARAMETERS" />
+      <option name="WORKING_DIRECTORY" />
+      <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
+      <option name="ALTERNATIVE_JRE_PATH" />
+      <option name="ENABLE_SWING_INSPECTOR" value="false" />
+      <option name="ENV_VARIABLES" />
+      <option name="PASS_PARENT_ENVS" value="true" />
+      <module name="ZookeeperMessaging" />
+      <envs />
+    </configuration>
     <configuration default="true" type="Application" factoryName="Application">
       <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea" />
       <option name="MAIN_CLASS_NAME" />
@@ -247,9 +280,14 @@
       <envs />
       <method />
     </configuration>
+    <list size="2">
+      <item index="0" class="java.lang.String" itemvalue="Application.Main" />
+      <item index="1" class="java.lang.String" itemvalue="Application.ZooMsg" />
+    </list>
     <recent_temporary>
-      <list size="1">
-        <item index="0" class="java.lang.String" itemvalue="Application.Main" />
+      <list size="2">
+        <item index="0" class="java.lang.String" itemvalue="Application.ZooMsg" />
+        <item index="1" class="java.lang.String" itemvalue="Application.Main" />
       </list>
     </recent_temporary>
   </component>
@@ -280,18 +318,18 @@
     <layout>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="12" side_tool="false" content_ui="tabs" />
+      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32962137" sideWeight="0.5" order="16" side_tool="false" content_ui="tabs" />
       <window_info id="Palette&#9;" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
       <window_info id="Image Layers" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Analysis" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="11" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="13" side_tool="true" content_ui="tabs" />
       <window_info id="Maven Projects" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.45910022" sideWeight="0.5" order="4" side_tool="false" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="14" side_tool="false" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="15" side_tool="false" content_ui="tabs" />
       <window_info id="Capture Tool" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
       <window_info id="Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="9" side_tool="false" content_ui="tabs" />
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.15579514" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
-      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32924336" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
+      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15579514" sideWeight="0.5" order="2" side_tool="false" content_ui="combo" />
       <window_info id="Structure" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Ant Build" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="UI Designer" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="10" side_tool="false" content_ui="tabs" />
@@ -302,8 +340,8 @@
       <window_info id="Message" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Commander" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="0" side_tool="false" content_ui="tabs" />
       <window_info id="Hierarchy" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.25" sideWeight="0.5" order="3" side_tool="false" content_ui="combo" />
-      <window_info id="Messages" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32962137" sideWeight="0.5" order="16" side_tool="false" content_ui="tabs" />
       <window_info id="Inspection" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.4" sideWeight="0.5" order="8" side_tool="false" content_ui="tabs" />
+      <window_info id="Find" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32924336" sideWeight="0.5" order="1" side_tool="false" content_ui="tabs" />
     </layout>
     <layout-to-restore>
       <window_info id="Palette" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" />
@@ -348,20 +386,79 @@
     <watches-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/target/classes/com/company/BasicWatcher.class" />
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/ZooConnection.java" />
+    <entry file="file://$PROJECT_DIR$/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="296">
+          <caret line="27" column="21" lean-forward="false" selection-start-line="27" selection-start-column="21" selection-end-line="27" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/BasicWatcher.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="342">
+          <caret line="19" column="16" lean-forward="false" selection-start-line="19" selection-start-column="16" selection-end-line="19" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/apache/zookeeper/zookeeper/3.4.10/zookeeper-3.4.10.jar!/org/apache/zookeeper/CreateMode.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="126">
+          <caret line="12" column="7" lean-forward="false" selection-start-line="12" selection-start-column="7" selection-end-line="12" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/apache/zookeeper/zookeeper/3.4.10/zookeeper-3.4.10.jar!/org/apache/zookeeper/Watcher.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="234">
+          <caret line="16" column="12" lean-forward="false" selection-start-line="16" selection-start-column="12" selection-end-line="16" selection-end-column="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/apache/zookeeper/zookeeper/3.4.10/zookeeper-3.4.10.jar!/org/apache/zookeeper/ZooDefs.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="216">
+          <caret line="18" column="21" lean-forward="false" selection-start-line="18" selection-start-column="21" selection-end-line="18" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Worker.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="710">
+          <caret line="124" column="26" lean-forward="false" selection-start-line="124" selection-start-column="26" selection-end-line="124" selection-end-column="26" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Master.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1818">
+          <caret line="111" column="0" lean-forward="false" selection-start-line="111" selection-start-column="0" selection-end-line="111" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/ZooMsg.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="540">
+          <caret line="30" column="17" lean-forward="true" selection-start-line="30" selection-start-column="17" selection-end-line="30" selection-end-column="17" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Master.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1782">
           <caret line="99" column="7" lean-forward="true" selection-start-line="99" selection-start-column="7" selection-end-line="99" selection-end-column="7" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="docComment;method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#manageRequest#0;class#Master#0" expanded="false" />
-            <element signature="method#manageRequest#0;class#Master#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -372,7 +469,6 @@
           <caret line="16" column="43" lean-forward="true" selection-start-line="16" selection-start-column="43" selection-end-line="16" selection-end-column="43" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="docComment;method#getNodeCode#0;class#ZooMsg#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -393,7 +489,6 @@
           <caret line="26" column="33" lean-forward="false" selection-start-line="26" selection-start-column="33" selection-end-line="26" selection-end-column="33" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="docComment;method#getNodeCode#0;class#ZooMsg#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -404,14 +499,6 @@
           <caret line="29" column="0" lean-forward="false" selection-start-line="29" selection-start-column="0" selection-end-line="29" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="docComment;method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#manageRequest#0;class#Master#0" expanded="false" />
-            <element signature="method#manageRequest#0;class#Master#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -446,14 +533,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="docComment;method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#manageRequest#0;class#Master#0" expanded="false" />
-            <element signature="method#manageRequest#0;class#Master#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -471,14 +550,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="docComment;method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#manageRequest#0;class#Master#0" expanded="false" />
-            <element signature="method#manageRequest#0;class#Master#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -496,14 +567,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="docComment;method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#manageRequest#0;class#Master#0" expanded="false" />
-            <element signature="method#manageRequest#0;class#Master#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -542,14 +605,6 @@
           <caret line="50" column="58" lean-forward="false" selection-start-line="50" selection-start-column="58" selection-end-line="50" selection-end-column="58" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="docComment;method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#manageRequest#0;class#Master#0" expanded="false" />
-            <element signature="method#manageRequest#0;class#Master#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -570,14 +625,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="docComment;method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#manageRequest#0;class#Master#0" expanded="false" />
-            <element signature="method#manageRequest#0;class#Master#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -595,14 +642,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="docComment;method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#manageRequest#0;class#Master#0" expanded="false" />
-            <element signature="method#manageRequest#0;class#Master#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -620,14 +659,6 @@
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="docComment;method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#manageRequest#0;class#Master#0" expanded="false" />
-            <element signature="method#manageRequest#0;class#Master#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -639,35 +670,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/target/classes/com/company/Worker.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/target/classes/com/company/BasicWatcher.class">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="0">
-          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
+    <entry file="file://$PROJECT_DIR$/target/classes/com/company/Worker.class" />
+    <entry file="file://$PROJECT_DIR$/target/classes/com/company/BasicWatcher.class" />
     <entry file="file://$PROJECT_DIR$/src/main/java/com/company/ZooConnection.java" />
-    <entry file="file://$PROJECT_DIR$/pom.xml">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="296">
-          <caret line="27" column="21" lean-forward="false" selection-start-line="27" selection-start-column="21" selection-end-line="27" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/BasicWatcher.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="342">
-          <caret line="19" column="16" lean-forward="false" selection-start-line="19" selection-start-column="16" selection-end-line="19" selection-end-column="16" />
-        </state>
-      </provider>
-    </entry>
     <entry file="jar://$MAVEN_REPOSITORY$/org/apache/zookeeper/zookeeper/3.4.10/zookeeper-3.4.10.jar!/org/apache/zookeeper/CreateMode.class">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="126">
@@ -686,43 +691,80 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="216">
           <caret line="18" column="21" lean-forward="false" selection-start-line="18" selection-start-column="21" selection-end-line="18" selection-end-column="21" />
-          <folding />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/ZooMsg.java">
+    <entry file="file://$PROJECT_DIR$/.idea/workspace.xml">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="234">
-          <caret line="13" column="4" lean-forward="false" selection-start-line="13" selection-start-column="4" selection-end-line="13" selection-end-column="4" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="docComment;method#getNodeCode#0;class#ZooMsg#0" expanded="false" />
-          </folding>
+        <state relative-caret-position="0">
+          <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/apache/zookeeper/zookeeper/3.4.10/zookeeper-3.4.10.jar!/org/apache/zookeeper/WatchedEvent.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="450">
+          <caret line="32" column="21" lean-forward="false" selection-start-line="32" selection-start-column="21" selection-end-line="32" selection-end-column="21" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="jar://$MAVEN_REPOSITORY$/org/apache/zookeeper/zookeeper/3.4.10/zookeeper-3.4.10.jar!/org/apache/zookeeper/ZooKeeper.class">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="317">
+          <caret line="141" column="29" lean-forward="false" selection-start-line="141" selection-start-column="29" selection-end-line="141" selection-end-column="29" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/pom.xml">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="18">
+          <caret line="36" column="39" lean-forward="false" selection-start-line="36" selection-start-column="39" selection-end-line="36" selection-end-column="39" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/ZooGUI.form">
+      <provider selected="true" editor-type-id="ui-designer">
+        <state />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/ZooGUI.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="72">
+          <caret line="4" column="13" lean-forward="false" selection-start-line="4" selection-start-column="13" selection-end-line="4" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/BasicWatcher.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="306">
+          <caret line="19" column="16" lean-forward="false" selection-start-line="19" selection-start-column="16" selection-end-line="19" selection-end-column="16" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Master.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="172">
-          <caret line="103" column="0" lean-forward="false" selection-start-line="103" selection-start-column="0" selection-end-line="103" selection-end-column="0" />
+        <state relative-caret-position="328">
+          <caret line="290" column="27" lean-forward="true" selection-start-line="290" selection-start-column="27" selection-end-line="290" selection-end-column="27" />
           <folding>
             <element signature="imports" expanded="true" />
-            <element signature="docComment;method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="method#createTreeStructure#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="method#setWatchers#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="method#deleteSubtree#0;class#Master#0" expanded="false" />
-            <element signature="docComment;method#manageRequest#0;class#Master#0" expanded="false" />
-            <element signature="method#manageRequest#0;class#Master#0" expanded="false" />
           </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Worker.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="741">
-          <caret line="84" column="0" lean-forward="false" selection-start-line="84" selection-start-column="0" selection-end-line="84" selection-end-column="0" />
+        <state relative-caret-position="441">
+          <caret line="161" column="0" lean-forward="true" selection-start-line="161" selection-start-column="0" selection-end-line="161" selection-end-column="0" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/ZooMsg.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-9">
+          <caret line="66" column="19" lean-forward="true" selection-start-line="66" selection-start-column="19" selection-end-line="66" selection-end-column="19" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
