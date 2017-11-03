@@ -12,32 +12,35 @@ import java.util.concurrent.TimeUnit;
 public class ZooMsg {
 
     interface Codes {
-        byte[] NEW_CHILD = "-1".getBytes();
-        byte[] EXCEPTION = "0".getBytes();
+        byte[] EXCEPTION = "-1".getBytes();
+        byte[] NEW_CHILD = "0".getBytes();
         byte[] SUCCESS = "1".getBytes();
         byte[] NODE_EXISTS = "2".getBytes();
     }
 
 
     private final static String HOST = "localhost:2181";
-
+    //String HOST = "10.10.1.229:2181";
 
     public static void main(String[] args) throws InterruptedException, KeeperException, IOException {
-
-        String HOST = "localhost:2181";
-        //String HOST = "10.10.1.229:2181";
 
         Master master = new Master(HOST);
 
         // Runnable interface (parallel)
-        Worker w1 = new Worker(HOST, "marcos_test");
-        w1.run();
+        Worker w1 = new Worker(HOST, "marcos");
+        Worker w2 = new Worker(HOST, "max");
 
-        for(int i = 0; i < 5000; i++)
-            Thread.sleep(100);
+        w1.enroll();
+        w1.goOnline();
 
+        w2.enroll();
+        w2.goOnline();
 
+        w1.read();
+        w2.read();
 
+        w1.goOffline();
+        w2.goOffline();
 
     }
 
