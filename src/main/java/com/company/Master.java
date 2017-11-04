@@ -191,6 +191,9 @@ public class Master implements Watcher{
      *
      * Please remember that among all the children, the new ones correspond to new requests, i.e. requests to process.
      * @param user The ID of the node who requested to enroll
+     *
+     * @throws KeeperException -
+     * @throws InterruptedException -
      */
     private void handleEnrollRequest(String user) throws KeeperException, InterruptedException {
 
@@ -219,6 +222,9 @@ public class Master implements Watcher{
      * The worker is then informed about the successful or erroneous deletion with the appropriate code.
      *
      * @param user The ID of the node who requested to quit
+     *
+     * @throws KeeperException -
+     * @throws InterruptedException -
      */
     private void handleQuitRequest(String user) throws KeeperException, InterruptedException {
 
@@ -240,6 +246,19 @@ public class Master implements Watcher{
 
     }
 
+    /**
+     * The method handles the online enrollments that are caught by the watcher on "/online" znode children.
+     * - W: Creates a node with his ID in "/online".
+     * - M: Checks that the user was registered. Exiting otherwise.
+     * - M: Creates a node in "/queue" and in "/backup" in case the latest was not created previously.
+     * - M: If there are messages (znode children) in "/backup/id", the master will be move them to "/queue/id".
+     * - M: Once everything is ready, the master updates the znode value to notify the user and set a watcher for offline request
+     *
+     * @param user The ID of the online node
+     *
+     * @throws KeeperException -
+     * @throws InterruptedException -
+     */
     private void handleOnlineUser(String user) throws KeeperException, InterruptedException {
 
         String registryUserPath = "/registry/" + user;
@@ -254,25 +273,40 @@ public class Master implements Watcher{
             return;
         }
 
-        // VALID USER: add it to /online, then add nodes in /queue and /backup to store his messages
-        zoo.setData(onlineUserPath, ZooMsg.Codes.SUCCESS, -1);
-        zoo.exists(onlineUserPath, this);    // set watcher to check when it will be deleted
+        // Create a node for the user inbox(queue); warning if there is a previous node (assuming fresh node)
+        if (zoo.exists(queueUserPath, null) != null)
+            System.out.println("<WARNING> " + user + " had an unexpected node in " + queueUserPath +" previously !");
+        else
+            zoo.create(queueUserPath, ZooMsg.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 
-        // create a node for the user inbox and a node for backup (if it's not already there, create it and quit)
-        zoo.create(queueUserPath, ZooMsg.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
-        if (zoo.exists(backupUserPath, null) == null) {
+        // Creating a node for Backup in case there is not one before
+        if (zoo.exists(backupUserPath, null) == null)
             zoo.create(backupUserPath, ZooMsg.Codes.NEW_CHILD, ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
-            return;
-        }
+
 
         // If it has backed-up messages, retrieve them and move them to /queue
         List<String> messages = zoo.getChildren(backupUserPath, null);
-        for (String message : messages) {
+        for (String message : messages)
             zoo.create(queueUserPath + "/" + message, ZooMsg.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
-        }
 
+
+        // NOTIFYING USER: changing /online node
+        zoo.setData(onlineUserPath, ZooMsg.Codes.SUCCESS, -1);
+        zoo.exists(onlineUserPath, this);    // set watcher to check when it will be deleted
     }
 
+
+    /**
+     * The method handles the offline enrollments that are caught by the watcher on "/online" znode children.
+     * - W: Deletes a node with his ID in "/online".
+     * - M: If there are messages (znode children) in "/queue/id", the master will be move them to "/backup/id".
+     * - M: Once everything is finish, the master deletes the znode "/queue/id" as well as its children.
+     *
+     * @param user The ID of the offline node
+     *
+     * @throws KeeperException -
+     * @throws InterruptedException -
+     */
     private void handleOfflineUser(String user) throws KeeperException, InterruptedException {
 
         String queueUserPath    = "/queue/"    + user;
