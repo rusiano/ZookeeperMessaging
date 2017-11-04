@@ -28,22 +28,27 @@ public class ZooMsg {
 
         // Runnable interface (parallel)
         Worker w1 = new Worker(HOST, "marcos");
-        Worker w2 = new Worker(HOST, "max");
+        Worker max = new Worker(HOST, "max");
 
         w1.enroll();
         w1.goOnline();
 
-        w2.enroll();
-        w2.goOnline();
+        max.enroll();
+        max.goOnline();
 
-        w1.read();
-        w2.read();
+        w1.write("max", "Ey!");
+        w1.write("max", "Ey2!");
+        w1.write("max", "Ey3!");
+        w1.write("max", "Bye!");
+
+        max.read();
+        max.readAll();
 
         w1.goOffline();
-        w2.goOffline();
+        max.goOffline();
 
         w1.quit();
-        w2.quit();
+        max.quit();
 
     }
 

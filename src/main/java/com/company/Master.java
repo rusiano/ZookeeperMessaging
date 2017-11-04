@@ -279,15 +279,16 @@ public class Master implements Watcher{
         else
             zoo.create(queueUserPath, ZooMsg.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
 
-        // Creating a node for Backup in case there is not one before
-        if (zoo.exists(backupUserPath, null) == null)
-            zoo.create(backupUserPath, ZooMsg.Codes.NEW_CHILD, ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
+        // If node /backup and contains backed-up messages, retrieve them and move them to /queue.
+        // Then delete children znode and create again a fresh /backup/ID znode
+        if (zoo.exists(backupUserPath, null) != null) {
+            List<String> messages = zoo.getChildren(backupUserPath, null);
+            for (String message : messages)
+                zoo.create(queueUserPath + "/" + message, ZooMsg.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+            deleteSubtree(backupUserPath);
+        }
+        zoo.create(backupUserPath, ZooMsg.Codes.NEW_CHILD, ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
 
-
-        // If it has backed-up messages, retrieve them and move them to /queue
-        List<String> messages = zoo.getChildren(backupUserPath, null);
-        for (String message : messages)
-            zoo.create(queueUserPath + "/" + message, ZooMsg.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
 
 
         // NOTIFYING USER: changing /online node

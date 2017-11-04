@@ -6,6 +6,7 @@ import org.apache.zookeeper.*;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import org.apache.zookeeper.Watcher.Event.EventType;
 
@@ -91,64 +92,71 @@ public class Worker implements Watcher {
         zoo.create("/queue/" + idReceiver + "/msg:" + message, ZooMsg.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
 
         for(int i = 0; i < 2; i++)
-            Thread.sleep(1000);
+            Thread.sleep(100);
     }
 
-    void read() throws KeeperException, InterruptedException {
+    /**
+     * Read the first message according the sequential code of the znode stored in /queue/ID
+     * @return String if there is a message or null if there is no message available/error
+     *
+     * @throws KeeperException -
+     * @throws InterruptedException -
+     */
+    String read() throws KeeperException, InterruptedException {
 
         if (zoo.exists("/online/" + this.id, null) == null) {
             System.out.println("<ERROR> User " + this.id + " cannot read messages without being online. Go online first!");
-            return;
+            return null;
         }
 
         if(zoo.exists("/queue/" + this.id, null) == null) {
             System.out.println("<ERROR> User " + this.id + " must have a /queue node where messages can be stored!");
-            return;
+            return null;
         }
 
         List<String> messages = zoo.getChildren("/queue/"+ this.id, null);
 
         if (messages.isEmpty()){
             System.out.println("<WARNING> User " + this.id + " tried to read without having messages in queue.");
-            return;
+            return null;
         }
 
-        Collections.sort(messages);
-        System.out.println(">>> READ First Message for " + this.id + ":");
-        System.out.println("Message size: "+messages.size());
+        //Collections.sort(messages, (left, right) -> Integer.parseInt(left.substring(left.length()-10)) - Integer.parseInt(right.substring(right.length()-10)); //Good Java :D
+        // Comparator used to get the message with lowest ID at a time
+        Comparator<String> message_comparator = new Comparator<String>() {
+            @Override
+            public int compare(String left, String right) {
+                return Integer.parseInt(left.substring(left.length()-9)) - Integer.parseInt((right.substring(right.length()-9))); // use your logic
+            }
+        };
 
-        String messageID = messages.get(messages.size()-1);
+        Collections.sort(messages, message_comparator);
+        System.out.println(">>> READ First Message for " + this.id + ":" + messages.get(0));
+        System.out.println("Number of message remaining: "+ (messages.size()-1));
+
+        String messageID = messages.get(0);
         String messageContent = messageID.split(":")[1].replaceAll("[0-9]{10}", "");
         System.out.println(messageContent + ";");
 
         // delete the message from the queue as soon as it is read
         zoo.delete("/queue/" + this.id + "/" + messageID, -1);
 
-        for(int i = 0; i < 2; i++)
-            Thread.sleep(1000);
+        return messageContent;
     }
 
-    void readAll() throws KeeperException, InterruptedException {
 
-        if (zoo.exists("/online/" + this.id, null) == null) {
-            System.out.println("<ERROR> User " + this.id + " cannot read messages without being online. Go online first!");
-            return;
+    String readAll() throws KeeperException, InterruptedException {
+
+        String reply = read();
+        String longString = "";
+
+        while(reply != null) {
+            reply = read();
+            longString = longString + reply;
         }
 
-        System.out.println(">>> READ Messages for " + this.id + ":");
+        return longString;
 
-        List<String> messages = zoo.getChildren("/queue/"+ this.id, null);
-        for (String messageID : Lists.reverse(messages)) {
-            System.out.print(messageID.split(":")[1].replaceAll("[0-9]{10}", "") + "; ");
-
-            // delete each message from the queue as soon as it is read
-            zoo.delete("/queue/" + this.id + "/" + messageID, -1);
-        }
-
-        System.out.println();
-
-        for(int i = 0; i < 2; i++)
-            Thread.sleep(1000);
     }
 
 
