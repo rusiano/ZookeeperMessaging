@@ -42,6 +42,9 @@ public class ZooMsg {
         w1.goOffline();
         w2.goOffline();
 
+        w1.quit();
+        w2.quit();
+
     }
 
     static ZooKeeper setupConnection(String HOST) throws IOException, InterruptedException {

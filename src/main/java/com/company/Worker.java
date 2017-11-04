@@ -37,8 +37,9 @@ public class Worker implements Watcher {
         //Setting watcher if state changes
         zoo.exists("/request/enroll/" + this.id, this);
 
-        for(int i = 0; i < 2; i++)
-            Thread.sleep(1000);
+        //Blocking execution until enrollment finish (deleting node => node == null)
+        while(zoo.exists("/request/enroll/" + this.id, null) != null)
+            Thread.sleep(100);
     }
 
     /**
@@ -53,22 +54,29 @@ public class Worker implements Watcher {
         //Setting watcher if state changes
         zoo.getData("/request/quit/" + id, this, null);
 
-        for(int i = 0; i < 2; i++)
-            Thread.sleep(1000);
+        //Blocking execution until enrollment finish (deleting node => node == null)
+        while(zoo.exists("/request/quit/" + this.id, null) != null)
+            Thread.sleep(100);
     }
 
 
     void goOnline() throws KeeperException, InterruptedException {
-        System.out.println(">>> " + this.id + ": ONLINE.");
         zoo.create("/online/" + this.id, ZooMsg.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+
+        //Blocking execution until online operation finish (master changes node => node value == successful)
+        while(!Arrays.equals(ZooMsg.Codes.SUCCESS, zoo.getData("/online/" + this.id, null, null))) {
+            Thread.sleep(100);
+        }
+        System.out.println(">>> " + this.id + ": ONLINE.");
     }
 
     void goOffline() throws KeeperException, InterruptedException {
-        System.out.println(">>> " + this.id + ": OFFLINE.");
         zoo.delete("/online/" + this.id, -1);
 
         for(int i = 0; i < 2; i++)
             Thread.sleep(1000);
+
+        System.out.println(">>> " + this.id + ": OFFLINE.");
     }
 
 
@@ -93,9 +101,22 @@ public class Worker implements Watcher {
             return;
         }
 
-        System.out.println(">>> READ First Message for " + this.id + ":");
+        if(zoo.exists("/queue/" + this.id, null) == null) {
+            System.out.println("<ERROR> User " + this.id + " must have a /queue node where messages can be stored!");
+            return;
+        }
+
         List<String> messages = zoo.getChildren("/queue/"+ this.id, null);
+
+        if (messages.isEmpty()){
+            System.out.println("<WARNING> User " + this.id + " tried to read without having messages in queue.");
+            return;
+        }
+
         Collections.sort(messages);
+        System.out.println(">>> READ First Message for " + this.id + ":");
+        System.out.println("Message size: "+messages.size());
+
         String messageID = messages.get(messages.size()-1);
         String messageContent = messageID.split(":")[1].replaceAll("[0-9]{10}", "");
         System.out.println(messageContent + ";");
