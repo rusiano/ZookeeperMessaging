@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="8690d26d-c88b-4d1a-9d8b-72f6903ed499" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/company/MasterWatcher.java" afterPath="$PROJECT_DIR$/src/main/java/com/company/MasterWatcher.java" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/company/Worker.java" afterPath="$PROJECT_DIR$/src/main/java/com/company/Worker.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <ignored path="$PROJECT_DIR$/target/" />
@@ -38,7 +40,7 @@
       <file leaf-file-name="Master.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Master.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="14">
+            <state relative-caret-position="-1198">
               <caret line="29" column="7" lean-forward="false" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -47,25 +49,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="MasterWatcher.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="MasterWatcher.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/company/MasterWatcher.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1112">
-              <caret line="232" column="82" lean-forward="false" selection-start-line="232" selection-start-column="82" selection-end-line="232" selection-end-column="82" />
+            <state relative-caret-position="-3018">
+              <caret line="2" column="30" lean-forward="false" selection-start-line="2" selection-start-column="30" selection-end-line="2" selection-end-column="30" />
               <folding>
-                <element signature="imports" expanded="true" />
-                <element signature="e#10462#10470#0" expanded="true" />
-                <element signature="e#10559#10567#0" expanded="true" />
+                <element signature="e#10267#10275#0" expanded="true" />
+                <element signature="e#10364#10372#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Worker.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Worker.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Worker.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-36">
-              <caret line="351" column="12" lean-forward="false" selection-start-line="351" selection-start-column="12" selection-end-line="351" selection-end-column="12" />
+            <state relative-caret-position="384">
+              <caret line="404" column="0" lean-forward="false" selection-start-line="404" selection-start-column="0" selection-end-line="404" selection-end-column="0" />
               <folding>
                 <element signature="imports" expanded="true" />
                 <element signature="e#983#984#0" expanded="true" />
@@ -438,7 +439,14 @@
       <option name="project" value="LOCAL" />
       <updated>1510609126515</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary=".">
+      <created>1510609154193</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1510609154193</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -511,7 +519,8 @@
     <MESSAGE value="Fixed issue: worker was not deleting messages from queue once read them" />
     <MESSAGE value="Changes to login logic (some parts may be overcomplicated - see setters/getters)" />
     <MESSAGE value="Added implementation of master's logic for unexpected users disconnections." />
-    <option name="LAST_COMMIT_MESSAGE" value="Added implementation of master's logic for unexpected users disconnections." />
+    <MESSAGE value="." />
+    <option name="LAST_COMMIT_MESSAGE" value="." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -928,7 +937,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Master.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="14">
+        <state relative-caret-position="-1198">
           <caret line="29" column="7" lean-forward="false" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -936,22 +945,10 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/MasterWatcher.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1112">
-          <caret line="232" column="82" lean-forward="false" selection-start-line="232" selection-start-column="82" selection-end-line="232" selection-end-column="82" />
-          <folding>
-            <element signature="imports" expanded="true" />
-            <element signature="e#10462#10470#0" expanded="true" />
-            <element signature="e#10559#10567#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Worker.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-36">
-          <caret line="351" column="12" lean-forward="false" selection-start-line="351" selection-start-column="12" selection-end-line="351" selection-end-column="12" />
+        <state relative-caret-position="384">
+          <caret line="404" column="0" lean-forward="false" selection-start-line="404" selection-start-column="0" selection-end-line="404" selection-end-column="0" />
           <folding>
             <element signature="imports" expanded="true" />
             <element signature="e#983#984#0" expanded="true" />
@@ -962,6 +959,17 @@
             <element signature="e#1186#1187#0" expanded="true" />
             <element signature="e#1240#1241#0" expanded="true" />
             <element signature="e#1286#1287#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/MasterWatcher.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-3018">
+          <caret line="2" column="30" lean-forward="false" selection-start-line="2" selection-start-column="30" selection-end-line="2" selection-end-column="30" />
+          <folding>
+            <element signature="e#10267#10275#0" expanded="true" />
+            <element signature="e#10364#10372#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -357,10 +357,8 @@ public class Worker implements Watcher {
                     ZooHelper.print("<WARNING> This username has already been taken.");
 
 
-            } else if (Arrays.equals(triggerCode, ZooHelper.Codes.EXCEPTION)) {
+            } else if (Arrays.equals(triggerCode, ZooHelper.Codes.EXCEPTION))
                 ZooHelper.print("<ERROR> It was impossible to " + requestType + " due to unknown/unexpected reasons.");
-
-            }
 
             return;
         }
@@ -404,6 +402,5 @@ public class Worker implements Watcher {
 
         return true;
     }
-
 
 }

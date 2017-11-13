@@ -1,9 +1,7 @@
 package com.company;
 
 import org.apache.zookeeper.*;
-
 import java.util.*;
-
 import org.apache.zookeeper.Watcher.Event.EventType;
 
 public class MasterWatcher implements Watcher {
@@ -52,20 +50,15 @@ public class MasterWatcher implements Watcher {
 
             String newChild = getNewChild(triggerPath); // ID of the last node added to triggerPath; null if no new node is found
 
-            if (newChild != null && triggerPath.contains("/request")) {
-
+            if (triggerPath.contains("/request") && newChild != null) {
                 if (triggerPath.contains("/enroll")) handleEnrollRequest(newChild);
                 else if (triggerPath.contains("/quit")) handleQuitRequest(newChild);
-
-            } else if (newChild != null && triggerPath.contains("/online"))
-                handleOnlineUser(newChild);
-
-            else if (newChild == null && triggerPath.equals("/online")) {
-                handleOfflineUser();
-
             }
-            //else
-            //    ZooHelper.print("<DEBUG> Master Watcher got triggered at " + triggerPath + " by unexpected event");
+
+            else if (triggerPath.contains("/online")) {
+                if (newChild != null) handleOnlineUser(newChild);
+                else handleOfflineUser();
+            }
 
         } catch (KeeperException e) {
             e.getMessage();
