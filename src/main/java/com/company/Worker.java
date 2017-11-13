@@ -69,6 +69,7 @@ public class Worker implements Watcher {
 
                 do {
 
+                    System.out.println("<< ENTER ^C TO CLOSE THIS PROMPT. >>");
                     System.out.print("> Username: ");
 
                     String inputId = input.nextLine().replace(" ", "");
@@ -115,7 +116,7 @@ public class Worker implements Watcher {
 
                 if (choice.equals(NEW_MESSAGE)) {
 
-                    System.out.println("<< ENTER ^C TO CLOSE THIS CHAT. >>");
+                    System.out.println("<< ENTER ^C TO CLOSE THIS PROMPT. >>");
                     String idReceiver;
                     boolean close = false;
 
@@ -150,6 +151,21 @@ public class Worker implements Watcher {
 
     }
 
+    private boolean choosesValidReceiver(String idReceiver){
+
+        if (!ZooHelper.exists("/online/" + idReceiver, this.zoo)) {
+            ZooHelper.print("<ERROR> The receiver is not online. You cannot write to offline people!");
+            return false;
+        }
+
+        if (idReceiver.equals(this.id)) {
+            ZooHelper.print("<ERROR> You cannot write to yourself!");
+            return false;
+        }
+
+        return true;
+    }
+
     /* WORKER'S ACTIONS ***********************************************************************************************/
 
     /**
@@ -166,7 +182,7 @@ public class Worker implements Watcher {
         zoo.getData(enrollUserPath, this, null);
 
         do { Thread.sleep(100); }
-        while (ZooHelper.exists(enrollUserPath, zoo) && Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
+        while (Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
 
         validEnroll = Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.SUCCESS);
 
@@ -386,21 +402,6 @@ public class Worker implements Watcher {
             //return;
         }
 
-    }
-
-    private boolean choosesValidReceiver(String idReceiver){
-
-        if (!ZooHelper.exists("/online/" + idReceiver, this.zoo)) {
-            ZooHelper.print("<ERROR> The receiver is not online. You cannot write to offline people!");
-            return false;
-        }
-
-        if (idReceiver.equals(this.id)) {
-            ZooHelper.print("<ERROR> You cannot write to yourself!");
-            return false;
-        }
-
-        return true;
     }
 
 }

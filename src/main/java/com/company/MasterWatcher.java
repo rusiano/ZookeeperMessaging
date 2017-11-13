@@ -37,7 +37,7 @@ public class MasterWatcher implements Watcher {
         sleep for few milliseconds before processing the event to give time to the worker to set its watchers.
          */
 
-        try { Thread.sleep(250); }
+        try { Thread.sleep(450); }
         catch (InterruptedException e) { e.printStackTrace(); }
 
         String triggerPath = event.getPath();       // the path at which the watcher was triggered
