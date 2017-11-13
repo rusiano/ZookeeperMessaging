@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="8690d26d-c88b-4d1a-9d8b-72f6903ed499" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/company/MasterWatcher.java" afterPath="$PROJECT_DIR$/src/main/java/com/company/MasterWatcher.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/company/Worker.java" afterPath="$PROJECT_DIR$/src/main/java/com/company/Worker.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
@@ -37,11 +36,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Master.java" pinned="false" current-in-tab="false">
+      <file leaf-file-name="Master.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Master.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="193">
-              <caret line="25" column="25" lean-forward="false" selection-start-line="25" selection-start-column="25" selection-end-line="25" selection-end-column="25" />
+            <state relative-caret-position="304">
+              <caret line="29" column="7" lean-forward="true" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -52,7 +51,7 @@
       <file leaf-file-name="MasterWatcher.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/company/MasterWatcher.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="182">
+            <state relative-caret-position="214">
               <caret line="183" column="78" lean-forward="false" selection-start-line="183" selection-start-column="76" selection-end-line="183" selection-end-column="78" />
               <folding>
                 <element signature="imports" expanded="true" />
@@ -61,11 +60,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="Worker.java" pinned="false" current-in-tab="true">
+      <file leaf-file-name="Worker.java" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Worker.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="350">
-              <caret line="71" column="53" lean-forward="false" selection-start-line="71" selection-start-column="53" selection-end-line="71" selection-end-column="53" />
+            <state relative-caret-position="182">
+              <caret line="373" column="53" lean-forward="false" selection-start-line="373" selection-start-column="53" selection-end-line="373" selection-end-column="53" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -105,7 +104,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>exist</find>
       <find>onlinePath</find>
       <find>backupPath</find>
       <find>watchedEvent.getPath()</find>
@@ -135,6 +133,7 @@
       <find>cant</find>
       <find>&quot;^C</find>
       <find>ei</find>
+      <find>either</find>
     </findStrings>
     <replaceStrings>
       <replace>System.out</replace>
@@ -192,9 +191,9 @@
         <option value="$PROJECT_DIR$/src/main/java/com/company/ZooMsg.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/company/WorkerWatcher.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/company/ZooHelper.java" />
-        <option value="$PROJECT_DIR$/src/main/java/com/company/Master.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/company/MasterWatcher.java" />
         <option value="$PROJECT_DIR$/src/main/java/com/company/Worker.java" />
+        <option value="$PROJECT_DIR$/src/main/java/com/company/Master.java" />
       </list>
     </option>
   </component>
@@ -400,7 +399,14 @@
       <option name="project" value="LOCAL" />
       <updated>1510575622881</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Minor changes to UI logic">
+      <created>1510576813444</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1510576813444</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -834,16 +840,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Master.java">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="193">
-          <caret line="25" column="25" lean-forward="false" selection-start-line="25" selection-start-column="25" selection-end-line="25" selection-end-column="25" />
-          <folding>
-            <element signature="imports" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/company/ZooHelper.java">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="193">
@@ -864,7 +860,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/company/MasterWatcher.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="182">
+        <state relative-caret-position="214">
           <caret line="183" column="78" lean-forward="false" selection-start-line="183" selection-start-column="76" selection-end-line="183" selection-end-column="78" />
           <folding>
             <element signature="imports" expanded="true" />
@@ -874,8 +870,18 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Worker.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="350">
-          <caret line="71" column="53" lean-forward="false" selection-start-line="71" selection-start-column="53" selection-end-line="71" selection-end-column="53" />
+        <state relative-caret-position="182">
+          <caret line="373" column="53" lean-forward="false" selection-start-line="373" selection-start-column="53" selection-end-line="373" selection-end-column="53" />
+          <folding>
+            <element signature="imports" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Master.java">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="304">
+          <caret line="29" column="7" lean-forward="true" selection-start-line="29" selection-start-column="7" selection-end-line="29" selection-end-column="7" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>

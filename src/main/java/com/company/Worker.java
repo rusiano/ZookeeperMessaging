@@ -370,7 +370,8 @@ public class Worker implements Watcher {
                 String nodeId = zoo.getChildren(triggerPath, false).get(0);
                 ZooHelper.print(ZooHelper.getSender(nodeId) + ": " + ZooHelper.getMessage(nodeId));
 
-                // after having read the message, set the watcher for the next one
+                // after having read the message, delete it and set the watcher for the next one
+                zoo.delete(triggerPath + "/" + nodeId, -1);
                 zoo.getChildren("/queue/" + this.id, this);
             } catch (KeeperException e) {
                 e.printStackTrace();
