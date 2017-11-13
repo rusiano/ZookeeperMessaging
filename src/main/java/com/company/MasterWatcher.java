@@ -44,34 +44,27 @@ public class MasterWatcher implements Watcher {
 
         String triggerPath = event.getPath();       // the path at which the watcher was triggered
         EventType triggerEvent = event.getType();   // the type of event that triggered the watcher
-        String newChild;                            // ID of the last node added to triggerPath; null if no new node is found
+
+        if (triggerEvent != EventType.NodeChildrenChanged)
+            return;
 
         try {
 
-            newChild = getNewChild(triggerPath);
+            String newChild = getNewChild(triggerPath); // ID of the last node added to triggerPath; null if no new node is found
 
-            if (newChild != null && triggerEvent == EventType.NodeChildrenChanged && triggerPath.contains("/request")) {
+            if (newChild != null && triggerPath.contains("/request")) {
 
-                // NEW ENROLL/QUIT REQUEST: If the watcher was triggered by one of the children of '/request', then an user tried either to register or to quit.
-                if (triggerPath.contains("/enroll")) {
-                    handleEnrollRequest(newChild);
-                }else if (triggerPath.contains("/quit"))
-                    handleQuitRequest(newChild);
+                if (triggerPath.contains("/enroll")) handleEnrollRequest(newChild);
+                else if (triggerPath.contains("/quit")) handleQuitRequest(newChild);
 
-            } else if (newChild != null && triggerEvent == EventType.NodeChildrenChanged && triggerPath.contains("/online")) {
-
-                // NEW ONLINE USER: If the watcher was triggered by '/online' and there is a new child, then a new user tried to go online.
+            } else if (newChild != null && triggerPath.contains("/online"))
                 handleOnlineUser(newChild);
 
-            } else if (newChild == null && triggerEvent == EventType.NodeChildrenChanged && triggerPath.equals("/online")) {
-
+            else if (newChild == null && triggerPath.equals("/online"))
                 ZooHelper.print("<INFO> One user disconnected.");
 
-            } else {
-
-                ZooHelper.print("<WARNING> Master Watcher got triggered at " + triggerPath + " by unexpected event");
-
-            }
+            //else
+            //    ZooHelper.print("<DEBUG> Master Watcher got triggered at " + triggerPath + " by unexpected event");
 
         } catch (KeeperException e) {
             e.getMessage();
@@ -219,7 +212,7 @@ public class MasterWatcher implements Watcher {
     }
 
 
-    /**
+    /*
      * The method handles the offline enrollments that are caught by the watcher on "/online" znode children.
      * - W: Deletes a node with his ID in "/online".
      * - M: If there are messages (znode children) in "/queue/id", the master will be move them to "/backup/id".
@@ -229,7 +222,7 @@ public class MasterWatcher implements Watcher {
      *
      * @throws KeeperException -
      * @throws InterruptedException -
-     */
+
     private void handleOfflineUser(String user) throws KeeperException, InterruptedException {
 
         String queueUserPath    = "/queue/"    + user;
@@ -248,5 +241,5 @@ public class MasterWatcher implements Watcher {
         // Delete the queue
         Master.deleteSubtree(queueUserPath);
 
-    }
+    }*/
 }

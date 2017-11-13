@@ -56,8 +56,10 @@ public class Worker implements Watcher {
 
                     String inputId = input.nextLine().replace(" ", "");
 
-                    if (inputId.equals(CLOSE))
+                    if (inputId.equals(CLOSE)) {
+                        w = null;
                         break;
+                    }
 
                     w = new Worker(ZooHelper.getConnection(), inputId);
 
@@ -67,7 +69,7 @@ public class Worker implements Watcher {
                 } while (!isUsernameOk);
 
                 // sign in (verifying that the user has been initialized and it was indeed registered)
-                isLoginOk = ( (w != null) && (w.goOnline()) );
+                isLoginOk = (w != null) && w.goOnline();
 
             } while (!isLoginOk);
 
