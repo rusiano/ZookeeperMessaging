@@ -22,19 +22,37 @@ public class Worker implements Watcher {
 
     private String id;
     private ZooKeeper zoo;
+    private boolean isLoginOk, isUsernameOk;
 
     private Worker(ZooKeeper connection, String id) throws IOException, InterruptedException {
         this.id = id;
         this.zoo = connection;
+        this.isLoginOk = false;
+        this.isUsernameOk = false;
+    }
+
+    private boolean isLoginOk() {
+        return this.isLoginOk;
+    }
+
+    private boolean isUsernameOk() {
+        return this.isUsernameOk;
+    }
+
+    private void setLoginOk(boolean loginOk) {
+        this.isLoginOk = loginOk;
+    }
+
+    private void setUsernameOk(boolean usernameOk) {
+        this.isUsernameOk = usernameOk;
     }
 
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
 
-        Worker w = null;
+        Worker user;
 
         do {
 
-            boolean isLoginOk;
             do {
 
                 System.out.println();
@@ -49,7 +67,6 @@ public class Worker implements Watcher {
 
                 boolean toEnroll = (inputCommand == SIGN_UP);
 
-                boolean isUsernameOk;
                 do {
 
                     System.out.print("> Username: ");
@@ -57,27 +74,28 @@ public class Worker implements Watcher {
                     String inputId = input.nextLine().replace(" ", "");
 
                     if (inputId.equals(CLOSE)) {
-                        w = null;
+                        user = null;
                         break;
                     }
 
-                    w = new Worker(ZooHelper.getConnection(), inputId);
+                    user = new Worker(ZooHelper.getConnection(), inputId);
 
                     // if it has to sign up, enroll it first, otherwise assume the username is ok
-                    isUsernameOk = !toEnroll || w.enroll();
+                    user.setUsernameOk(!toEnroll || user.enroll());
 
-                } while (!isUsernameOk);
+                } while (!user.isUsernameOk());
 
                 // sign in (verifying that the user has been initialized and it was indeed registered)
-                isLoginOk = (w != null) && w.goOnline();
+                if (user != null)
+                    user.setLoginOk( user.goOnline() );
 
-            } while (!isLoginOk);
+            } while (user == null || !user.isLoginOk());
 
 
             do {
 
                 System.out.println();
-                System.out.print("  [ (N) New Chat | (O) See Online Users | (D) Deregister | (E) Exit ] ");
+                System.out.print("  [ (N) New Chat | (O) See Online Users | (U) Deregister | (E) Exit ] ");
                 String choice = input.next().toUpperCase();
                 input.nextLine();
 
@@ -87,7 +105,7 @@ public class Worker implements Watcher {
                 }
 
 
-                if (choice.equals(UNREGISTER) && w.quit()) {
+                if (choice.equals(UNREGISTER) && user.quit()) {
                     System.out.println(">> You have been correctly unregistered.");
                     break;
                 }
@@ -110,7 +128,7 @@ public class Worker implements Watcher {
                             break;
                         }
 
-                    } while (!w.choosesValidReceiver(idReceiver));
+                    } while (!user.choosesValidReceiver(idReceiver));
 
                     if (!close) {
                         do {
@@ -120,7 +138,7 @@ public class Worker implements Watcher {
                             if (message.equals(CLOSE))
                                 break;
 
-                            w.write(idReceiver, message);
+                            user.write(idReceiver, message);
                         } while (true);
                     }
 
@@ -141,27 +159,20 @@ public class Worker implements Watcher {
      */
     private boolean enroll() throws KeeperException, InterruptedException {
 
+        boolean validEnroll;
         String enrollUserPath = "/request/enroll/" + this.id;
 
-        try { zoo.create(enrollUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT); }
-        catch (KeeperException.NodeExistsException e) {
-            ZooHelper.print("<ERROR> Another user is already trying to register with the same username. Please choose another username.");
-            return false;
-        }
-
-        // set a watcher to be notified when the code changes
+        zoo.create(enrollUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         zoo.getData(enrollUserPath, this, null);
 
         do { Thread.sleep(100); }
         while (ZooHelper.exists(enrollUserPath, zoo) && Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
 
-        if (!ZooHelper.exists(enrollUserPath, zoo)
-                || Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.SUCCESS))
-            return true;
+        validEnroll = Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.SUCCESS);
 
-        // otherwise there was an error: delete the request anyway
         zoo.delete(enrollUserPath, -1);
-        return false;
+
+        return validEnroll;
 
     }
 
@@ -173,7 +184,9 @@ public class Worker implements Watcher {
      */
     private boolean quit() throws KeeperException, InterruptedException {
 
+        boolean validQuit;
         String quitUserPath = "/request/quit/" + this.id;
+        String onlineUserPath = "/online/" + this.id;
 
         zoo.create(quitUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         zoo.getData(quitUserPath, this, null); //Setting watcher if code changes
@@ -181,12 +194,18 @@ public class Worker implements Watcher {
         do { Thread.sleep(100); }
         while (ZooHelper.exists(quitUserPath, zoo) && Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
 
-        if (Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.SUCCESS)
-                || !ZooHelper.exists(quitUserPath, zoo))
-            return true;
+        if (Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.SUCCESS)) {
 
-        // otherwise there was an error
-        return false;
+            // delete the node in online, but leave the queue: the master will delete if after having moved the messages
+            if (ZooHelper.exists(onlineUserPath, zoo)) zoo.delete(onlineUserPath, -1);
+            validQuit = true;
+
+        } else {
+            validQuit = false;
+        }
+
+        zoo.delete(quitUserPath, -1);
+        return validQuit;
     }
 
     /**
@@ -201,8 +220,9 @@ public class Worker implements Watcher {
         String queueUserPath = "/queue/" + this.id;
 
         // create a node in "/online" to notify the master
-        try { zoo.create(onlineUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL); }
-        catch (KeeperException.NodeExistsException e) {
+        try {
+            zoo.create(onlineUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+        } catch (KeeperException.NodeExistsException e) {
             ZooHelper.print("<ERROR> Either you are trying to login without being registered or you are already online.");
             return false;
         }
@@ -323,25 +343,13 @@ public class Worker implements Watcher {
 
         EventType triggerEvent = watchedEvent.getType();
         String triggerPath = watchedEvent.getPath();
-        //byte[] triggerCode = ZooHelper.getCode(triggerPath, zoo);
+        byte[] triggerCode = ZooHelper.getCode(triggerPath, zoo);
 
         // NEW ENROLLMENT/QUIT REQUEST RESULT
         if (triggerPath.contains("/request") && triggerEvent == EventType.NodeDataChanged) {
-            byte[] requestCode = ZooHelper.getCode(triggerPath, zoo);
             String requestType = triggerPath.split("/")[2];
 
-            if (Arrays.equals(requestCode, ZooHelper.Codes.SUCCESS)) {
-
-                ZooHelper.print("<INFO> You managed  to " + requestType + " successfully!");
-                try {
-                    zoo.delete(triggerPath, -1);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                } catch (KeeperException e) {
-                    e.printStackTrace();
-                }
-
-            } else if (Arrays.equals(requestCode, ZooHelper.Codes.NODE_EXISTS)) {
+            if (Arrays.equals(triggerCode, ZooHelper.Codes.NODE_EXISTS)) {
 
                 if (ZooHelper.exists("/online/" + this.id, zoo))
                     ZooHelper.print("<WARNING> You are already online.");
@@ -349,8 +357,7 @@ public class Worker implements Watcher {
                     ZooHelper.print("<WARNING> This username has already been taken.");
 
 
-            } else if (Arrays.equals(requestCode, ZooHelper.Codes.EXCEPTION)) {
-
+            } else if (Arrays.equals(triggerCode, ZooHelper.Codes.EXCEPTION)) {
                 ZooHelper.print("<ERROR> It was impossible to " + requestType + " due to unknown/unexpected reasons.");
 
             }
