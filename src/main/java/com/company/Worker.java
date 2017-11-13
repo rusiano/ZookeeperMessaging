@@ -16,6 +16,8 @@ public class Worker implements Watcher {
     private static final String ONLINE_USERS = "O";
     private static final String EXIT = "E";
 
+    private static final String CLOSE = "^C";
+
     private static Scanner input = new Scanner(System.in);
 
     private String id;
@@ -28,7 +30,7 @@ public class Worker implements Watcher {
 
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
 
-        Worker w;
+        Worker w = null;
 
         do {
 
@@ -53,6 +55,10 @@ public class Worker implements Watcher {
                     System.out.print("> Username: ");
 
                     String inputId = input.nextLine().replace(" ", "");
+
+                    if (inputId.equals(CLOSE))
+                        break;
+
                     w = new Worker(ZooHelper.getConnection(), inputId);
 
                     // if it has to sign up, enroll it first, otherwise assume the username is ok
@@ -60,8 +66,8 @@ public class Worker implements Watcher {
 
                 } while (!isUsernameOk);
 
-                // sign in (verifying that the user was indeed registered)
-                isLoginOk = w.goOnline();
+                // sign in (verifying that the user has been initialized and it was indeed registered)
+                isLoginOk = ( (w != null) && (w.goOnline()) );
 
             } while (!isLoginOk);
 
@@ -97,7 +103,7 @@ public class Worker implements Watcher {
                         System.out.print(">> To: ");
                         idReceiver = input.nextLine().replace(" ", "");
 
-                        if (idReceiver.equals("^C")) {
+                        if (idReceiver.equals(CLOSE)) {
                             close = true;
                             break;
                         }
@@ -109,7 +115,7 @@ public class Worker implements Watcher {
                             System.out.print(">>> Text: ");
                             String message = input.nextLine();
 
-                            if (message.equals("^C"))
+                            if (message.equals(CLOSE))
                                 break;
 
                             w.write(idReceiver, message);

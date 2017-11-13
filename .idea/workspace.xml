@@ -1,12 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="8690d26d-c88b-4d1a-9d8b-72f6903ed499" name="Default" comment="Create Tree Structure">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/main/java/com/company/MasterWatcher.java" />
-      <change type="DELETED" beforePath="$PROJECT_DIR$/src/main/java/com/company/BasicWatcher.java" afterPath="" />
-      <change type="MOVED" beforePath="$PROJECT_DIR$/src/main/java/com/company/ZooMsg.java" afterPath="$PROJECT_DIR$/src/main/java/com/company/ZooHelper.java" />
+    <list default="true" id="8690d26d-c88b-4d1a-9d8b-72f6903ed499" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/company/Master.java" afterPath="$PROJECT_DIR$/src/main/java/com/company/Master.java" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/main/java/com/company/Worker.java" afterPath="$PROJECT_DIR$/src/main/java/com/company/Worker.java" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
@@ -67,8 +63,8 @@
       <file leaf-file-name="Worker.java" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Worker.java">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="300">
-              <caret line="379" column="74" lean-forward="false" selection-start-line="379" selection-start-column="74" selection-end-line="379" selection-end-column="74" />
+            <state relative-caret-position="459">
+              <caret line="68" column="80" lean-forward="false" selection-start-line="68" selection-start-column="80" selection-end-line="68" selection-end-column="80" />
               <folding>
                 <element signature="imports" expanded="true" />
               </folding>
@@ -108,7 +104,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>_CODE</find>
       <find>create</find>
       <find>exist</find>
       <find>onlinePath</find>
@@ -138,6 +133,7 @@
       <find>whoIsOnline</find>
       <find>'s online</find>
       <find>cant</find>
+      <find>&quot;^C</find>
     </findStrings>
     <replaceStrings>
       <replace>System.out</replace>
@@ -164,6 +160,7 @@
       <replace>enrollUserPath</replace>
       <replace>inputId</replace>
       <replace>ONLINE_USERS</replace>
+      <replace>CLOSE</replace>
       <replace>getOnlineUsers</replace>
     </replaceStrings>
   </component>
@@ -388,7 +385,14 @@
       <option name="project" value="LOCAL" />
       <updated>1508250372893</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="First UI implementation">
+      <created>1510574896311</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1510574896312</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -455,7 +459,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="Create Tree Structure" />
-    <option name="LAST_COMMIT_MESSAGE" value="Create Tree Structure" />
+    <MESSAGE value="First UI implementation" />
+    <option name="LAST_COMMIT_MESSAGE" value="First UI implementation" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -860,8 +865,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/main/java/com/company/Worker.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="300">
-          <caret line="379" column="74" lean-forward="false" selection-start-line="379" selection-start-column="74" selection-end-line="379" selection-end-column="74" />
+        <state relative-caret-position="459">
+          <caret line="68" column="80" lean-forward="false" selection-start-line="68" selection-start-column="80" selection-end-line="68" selection-end-column="80" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
