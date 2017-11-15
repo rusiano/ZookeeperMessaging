@@ -46,6 +46,14 @@ public class Worker implements Watcher {
         this.isUsernameOk = usernameOk;
     }
 
+    private String getId() {
+        return this.id;
+    }
+
+    private ZooKeeper getZoo() {
+        return this.zoo;
+    }
+
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
 
         Worker user;
@@ -86,21 +94,29 @@ public class Worker implements Watcher {
                 } while (!user.isUsernameOk());
 
                 // sign in (verifying that the user has been initialized and it was indeed registered)
-                if (user != null)
+                if (user != null) {
+                    if (toEnroll) {
+                        System.out.println();
+                        System.out.println("=== REGISTRATION SUCCESSFUL ===");
+                    }
+
                     user.setLoginOk( user.goOnline() );
+                }
+
 
             } while (user == null || !user.isLoginOk());
 
-
+            System.out.println("=== LOGIN SUCCESSFUL ===");
             do {
 
                 System.out.println();
-                System.out.print("  [ (N) New Chat | (O) See Online Users | (U) Deregister | (E) Exit ] ");
+                System.out.print("  [ (N) New Chat | (O) See Online Users | (U) Unregister | (E) Exit ] ");
                 String choice = input.next().toUpperCase();
                 input.nextLine();
 
                 if (choice.equals(EXIT)) {
-                    System.out.println(">> Exiting...");
+                    user.getZoo().delete("/online/" + user.getId(), -1);
+                    System.out.println(">> Exiting (going offline)...");
                     break;
                 }
 
@@ -189,7 +205,7 @@ public class Worker implements Watcher {
         zoo.create(enrollUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         zoo.getData(enrollUserPath, this, null);
 
-        do { Thread.sleep(100); }
+        do { Thread.sleep(50); }
         while (Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
 
         validEnroll = Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.SUCCESS);
@@ -220,8 +236,8 @@ public class Worker implements Watcher {
         zoo.create(quitUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         zoo.getData(quitUserPath, this, null); //Setting watcher if code changes
 
-        do { Thread.sleep(100); }
-        while (ZooHelper.exists(quitUserPath, zoo) && Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
+        do { Thread.sleep(50); }
+        while (Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
 
         if (Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.SUCCESS)) {
 
@@ -262,7 +278,7 @@ public class Worker implements Watcher {
         zoo.exists(onlineUserPath, this);
 
         // wait for the master to take some actions: either delete the node or change its code
-        do { Thread.sleep(100); }
+        do { Thread.sleep(50); }
         while (ZooHelper.exists(onlineUserPath, zoo) && Arrays.equals(ZooHelper.getCode(onlineUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
 
         // if the master deleted the online node, then the user wasn't registered

@@ -31,14 +31,15 @@ public class MasterWatcher implements Watcher {
     @Override
     public void process(WatchedEvent event) {
 
-        /* IMPORTANT: after hours and hours of testing I found out that after the last changes, the master is faster
-        in triggering the events than the worker to set the triggers. The result is that the worker's watcher misses the
-        events and it doesn't process them. For this reason (for the moment) it is necessary to make the master watcher
-        sleep for few milliseconds before processing the event to give time to the worker to set its watchers.
-         */
+        /* IMPORTANT:
+        * after hours and hours of testing I found out that after the last changes, the master is faster
+        * in triggering the events than the worker to set the triggers. The result is that the worker's watcher misses the
+        * events and it doesn't process them. For this reason (for the moment) it is necessary to make the master watcher
+        * sleep for few milliseconds before processing the event to give time to the worker to set its watchers.
+        */
 
-        try { Thread.sleep(450); }
-        catch (InterruptedException e) { e.printStackTrace(); }
+        //try { Thread.sleep(350); }
+        //catch (InterruptedException e) { e.printStackTrace(); }
 
         String triggerPath = event.getPath();       // the path at which the watcher was triggered
         EventType triggerEvent = event.getType();   // the type of event that triggered the watcher
