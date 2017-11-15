@@ -19,19 +19,18 @@ class Master{
 
         watcher = new MasterWatcher(zoo);   //  Sets the master watcher
 
-        do {
-            System.out.print("> Do you want to completely remove the previous tree structure (Y/N)? ");
-            String answer = input.nextLine().toUpperCase();
-            if (answer.equals("Y")) {
-                removeTreeStructure(true);      // Removes previous tree structure
-                break;
-            } else if (answer.equals("N")) {
-                removeTreeStructure(false);
-                break;
-            } else
-                System.out.println("<ERROR> " + answer + " is not a valid command. Please retry.");
-        } while (true);
+/*
+        System.out.print("> Do you want to completely remove the previous tree structure (Y/N)? ");
+        String answer = input.nextLine().toUpperCase();
+        if (answer.equals("Y"))
+            removeTreeStructure(true);      // Removes previous tree structure
+        else if (answer.equals("N"))
+            removeTreeStructure(false);
+        else
+            System.out.println("<ERROR> " + answer + " is not a valid command. Please retry.");
+*/
 
+        removeTreeStructure(true);      // Removes previous tree structure
         createTreeStructure();             // Creates a new clean tree structure
 
         System.out.println("> Enter any key at any time to stop the master.");
