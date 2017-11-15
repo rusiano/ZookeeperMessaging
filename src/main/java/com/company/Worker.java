@@ -8,8 +8,7 @@ import org.apache.zookeeper.Watcher.Event.EventType;
 public class Worker implements Watcher {
 
     private static final int SHUT_DOWN = 0;
-    //private static final int SIGN_IN = 1;
-    private static final int SIGN_UP = 2;
+    private static final int SIGN_UP = 1;
 
     private static final String NEW_MESSAGE = "N";
     private static final String UNREGISTER = "U";
@@ -47,6 +46,14 @@ public class Worker implements Watcher {
         this.isUsernameOk = usernameOk;
     }
 
+    private String getId() {
+        return this.id;
+    }
+
+    private ZooKeeper getZoo() {
+        return this.zoo;
+    }
+
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
 
         Worker user;
@@ -56,7 +63,7 @@ public class Worker implements Watcher {
             do {
 
                 System.out.println();
-                System.out.print("  [ (0) Shut down | (1) Sign In | (2) Sign Up ] ");
+                System.out.print("  [ (0) Shut down | (1) Sign Up | (2) Sign In ] ");
                 int inputCommand = input.nextInt();
                 input.nextLine();
 
@@ -87,21 +94,29 @@ public class Worker implements Watcher {
                 } while (!user.isUsernameOk());
 
                 // sign in (verifying that the user has been initialized and it was indeed registered)
-                if (user != null)
+                if (user != null) {
+                    if (toEnroll) {
+                        System.out.println();
+                        System.out.println("=== REGISTRATION SUCCESSFUL ===");
+                    }
+
                     user.setLoginOk( user.goOnline() );
+                }
+
 
             } while (user == null || !user.isLoginOk());
 
-
+            System.out.println("=== LOGIN SUCCESSFUL ===");
             do {
 
                 System.out.println();
-                System.out.print("  [ (N) New Chat | (O) See Online Users | (U) Deregister | (E) Exit ] ");
+                System.out.print("  [ (N) New Chat | (O) See Online Users | (U) Unregister | (E) Exit ] ");
                 String choice = input.next().toUpperCase();
                 input.nextLine();
 
                 if (choice.equals(EXIT)) {
-                    System.out.println(">> Exiting...");
+                    user.getZoo().delete("/online/" + user.getId(), -1);
+                    System.out.println(">> Exiting (going offline)...");
                     break;
                 }
 
@@ -151,6 +166,12 @@ public class Worker implements Watcher {
 
     }
 
+    /**
+     * The method checks if the receiver specified is valid for a given user. More specifically, the receiver must be online
+     * and cannot be the sender itself.
+     * @param idReceiver The id of the receiver to be checked.
+     * @return true or false depending if the receiver in input is valid or not.
+     */
     private boolean choosesValidReceiver(String idReceiver){
 
         if (!ZooHelper.exists("/online/" + idReceiver, this.zoo)) {
@@ -169,7 +190,10 @@ public class Worker implements Watcher {
     /* WORKER'S ACTIONS ***********************************************************************************************/
 
     /**
-     * Creates a node in '/request/enroll/w_id' and set a watcher for async process when it changes
+     * The method manages all the enrollment procedure for the client.
+     * The client must create a node in "/request/enroll" and wait for the master to set the appropriate value.
+     * In any case the request node is deleted at the end of the process.
+     * @return true or false depending if the enrollment was successful or not.
      * @throws KeeperException -
      * @throws InterruptedException -
      */
@@ -181,20 +205,25 @@ public class Worker implements Watcher {
         zoo.create(enrollUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         zoo.getData(enrollUserPath, this, null);
 
-        do { Thread.sleep(100); }
+        do { Thread.sleep(50); }
         while (Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
 
         validEnroll = Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.SUCCESS);
 
         zoo.delete(enrollUserPath, -1);
-
         return validEnroll;
 
     }
 
 
     /**
-     * Creates a node in '/request/quit/w_id' and set a watcher for async process when it changes
+     * The method manages all the deregistration procedure for the client.
+     * Specifically, the client creates a node in "/request/quit" and waits for the master to set the appropriate value.
+     * If the master can successfully delete the user from the registry, the method also checks if the user was online
+     * and removes the node. In any case the request node is deleted at the end of the process.
+     * Please notice that this method does not deleted the queue to let the master move it to backup. The master will
+     * take care of deleting the queue at the appropriate time.
+     * @return true or false depending if the deregistration was successful or not.
      * @throws KeeperException -
      * @throws InterruptedException -
      */
@@ -207,8 +236,8 @@ public class Worker implements Watcher {
         zoo.create(quitUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         zoo.getData(quitUserPath, this, null); //Setting watcher if code changes
 
-        do { Thread.sleep(100); }
-        while (ZooHelper.exists(quitUserPath, zoo) && Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
+        do { Thread.sleep(50); }
+        while (Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
 
         if (Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.SUCCESS)) {
 
@@ -225,8 +254,11 @@ public class Worker implements Watcher {
     }
 
     /**
-     * This method takes care of all the procedures for a valid login.
-     * @return true for valid login, false for invalid login.
+     * This method tries to make the user go online.
+     * Specifically, the method tries to create a node in "/online" and waits for the master to either delete the node
+     * or set the appropriate success code. In case the login is successful, the method retrieves and shows all unread
+     * messages (if any) and finally sets the initial watcher for incoming messages.
+     * @return true or false depending if the login was successful or not.
      * @throws KeeperException -
      * @throws InterruptedException -
      */
@@ -246,7 +278,7 @@ public class Worker implements Watcher {
         zoo.exists(onlineUserPath, this);
 
         // wait for the master to take some actions: either delete the node or change its code
-        do { Thread.sleep(100); }
+        do { Thread.sleep(50); }
         while (ZooHelper.exists(onlineUserPath, zoo) && Arrays.equals(ZooHelper.getCode(onlineUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
 
         // if the master deleted the online node, then the user wasn't registered
@@ -269,6 +301,16 @@ public class Worker implements Watcher {
     }
 
 
+    /**
+     * The method sends a message to the specified user.
+     * Specifically, creates an ephemeral sequential znode in the queue of the receiver with an id of the form:
+     * 'idSender:message'.
+     * @param idReceiver The id of the receiver. Please notice that the validity of this parameter must be checked prior
+     *                   to the invocation of this method.
+     * @param message The content of the message.
+     * @throws KeeperException -
+     * @throws InterruptedException -
+     */
     private void write(String idReceiver, String message) throws KeeperException, InterruptedException {
 
         if (!ZooHelper.exists("/online/" + this.id, zoo)) {
@@ -280,6 +322,67 @@ public class Worker implements Watcher {
                 + message, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
         System.out.println(ZooHelper.timestamp());
     }
+
+    /* WATCHER'S METHODS **********************************************************************************************/
+
+    /**
+     * This process is inherited from Watcher interface. It is fired each time a watcher (that was set in a node)
+     * changed or some children were created in the path (depending on how the watcher was set).
+     * Ref: https://zookeeper.apache.org/doc/trunk/zookeeperProgrammers.html
+     * @param watchedEvent Event triggered containing path type and state
+     */
+    @Override
+    public void process(WatchedEvent watchedEvent) {
+
+        EventType triggerEvent = watchedEvent.getType();
+        String triggerPath = watchedEvent.getPath();
+        byte[] triggerCode = ZooHelper.getCode(triggerPath, zoo);
+
+        // NEW ENROLLMENT/QUIT REQUEST RESULT
+        if (triggerPath.contains("/request") && triggerEvent == EventType.NodeDataChanged) {
+            String requestType = triggerPath.split("/")[2];
+
+            if (Arrays.equals(triggerCode, ZooHelper.Codes.NODE_EXISTS)) {
+
+                if (ZooHelper.exists("/online/" + this.id, zoo))
+                    ZooHelper.print("<WARNING> You are already online.");
+                else
+                    ZooHelper.print("<WARNING> This username has already been taken.");
+
+
+            } else if (Arrays.equals(triggerCode, ZooHelper.Codes.EXCEPTION))
+                ZooHelper.print("<ERROR> It was impossible to " + requestType + " due to unknown/unexpected reasons.");
+
+            return;
+        }
+
+        // NEW ONLINE REQUEST RESULT
+        if (triggerPath.contains("/online") && triggerEvent == EventType.NodeDeleted) {
+            ZooHelper.print("<WARNING> You cannot go online without being registered. Try to register first.");
+            return;
+        }
+
+        // NEW MESSAGE RECEIVED
+        if (triggerPath.contains("/queue/" + this.id) && triggerEvent == EventType.NodeChildrenChanged) {
+            try {
+                String nodeId = zoo.getChildren(triggerPath, false).get(0);
+                ZooHelper.print(ZooHelper.getSender(nodeId) + ": " + ZooHelper.getMessage(nodeId));
+
+                // after having read the message, delete it and set the watcher for the next one
+                zoo.delete(triggerPath + "/" + nodeId, -1);
+                zoo.getChildren("/queue/" + this.id, this);
+            } catch (KeeperException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            //return;
+        }
+
+    }
+
+}
+
 
     /*
     private String read() throws KeeperException, InterruptedException {
@@ -340,68 +443,3 @@ public class Worker implements Watcher {
 
     }
     */
-
-    /* WATCHER'S METHODS **********************************************************************************************/
-
-    /**
-     * This process is inherited from Watcher interface. It is fired each time a watcher (that was set in a node)
-     * changed or some children were created in the path (depending on how the watcher was set).
-     * Ref: https://zookeeper.apache.org/doc/trunk/zookeeperProgrammers.html
-     *
-     * It contains the asynchronous logic of the worker. The general case in which this watcher is fired is after the
-     * master has evaluated the initial worker's request and it sends back the result of the request by changing the code
-     * associated with the node just created. The watcher here must then interpret the new codes and act accordingly.
-     *
-     * @param watchedEvent Event triggered containing path type and state
-     */
-    @Override
-    public void process(WatchedEvent watchedEvent) {
-
-        EventType triggerEvent = watchedEvent.getType();
-        String triggerPath = watchedEvent.getPath();
-        byte[] triggerCode = ZooHelper.getCode(triggerPath, zoo);
-
-        // NEW ENROLLMENT/QUIT REQUEST RESULT
-        if (triggerPath.contains("/request") && triggerEvent == EventType.NodeDataChanged) {
-            String requestType = triggerPath.split("/")[2];
-
-            if (Arrays.equals(triggerCode, ZooHelper.Codes.NODE_EXISTS)) {
-
-                if (ZooHelper.exists("/online/" + this.id, zoo))
-                    ZooHelper.print("<WARNING> You are already online.");
-                else
-                    ZooHelper.print("<WARNING> This username has already been taken.");
-
-
-            } else if (Arrays.equals(triggerCode, ZooHelper.Codes.EXCEPTION))
-                ZooHelper.print("<ERROR> It was impossible to " + requestType + " due to unknown/unexpected reasons.");
-
-            return;
-        }
-
-        // NEW ONLINE REQUEST RESULT
-        if (triggerPath.contains("/online") && triggerEvent == EventType.NodeDeleted) {
-            ZooHelper.print("<WARNING> You cannot go online without being registered. Try to register first.");
-            return;
-        }
-
-        // NEW MESSAGE RECEIVED
-        if (triggerPath.contains("/queue/" + this.id) && triggerEvent == EventType.NodeChildrenChanged) {
-            try {
-                String nodeId = zoo.getChildren(triggerPath, false).get(0);
-                ZooHelper.print(ZooHelper.getSender(nodeId) + ": " + ZooHelper.getMessage(nodeId));
-
-                // after having read the message, delete it and set the watcher for the next one
-                zoo.delete(triggerPath + "/" + nodeId, -1);
-                zoo.getChildren("/queue/" + this.id, this);
-            } catch (KeeperException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            //return;
-        }
-
-    }
-
-}
