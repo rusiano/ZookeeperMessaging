@@ -83,16 +83,6 @@
 
             console.log("Received message for chat: " + message);
           }
-          
-
-          chat.onopen = function () {
-            ws.close;
-
-          }
-
-          chat.onerror = function () {
-             console.log('error with chat websocket');
-          }
 
           $('#register_button').on('click', function(){
             var jsonObject = {
@@ -129,65 +119,6 @@
             
             console.log("Send a message to", jsonObject, $('#dest').val());
         });
-
-        /*var socket = io.connect('http://localhost:9092',{reconnection: false});
-        var connected = false;
-
-        socket.on('connect', function() {
-          console.log('Connected with server ',socket.connected);
-        });
-
-        socket.on('disconnect', function(){
-          console.log('Disconnected from server.');
-        });
-
-
-
-
-        socket.on('register_ack', function(msg){
-          var message = JSON.parse(msg);
-          if(message['status'] == 'registered'){
-              $('#username').text($("input[name~='username']").val());
-              $('#chat').css({'display':'block'});
-              $('#register_div').toggle();
-              connected = true;
-          }else if(message['status'] == 'error'){
-              alert("Error when registing name. Error: " + message['additional_message']);
-          }else
-          console.log("Socket received some information but it was not codified");
-        });
-
-
-        if(connected) {
-            alert("hollllla");
-
-            var userName = $('#username').text();
-
-            socket.on('channel' + userName, function (msg) {
-                var message = JSON.parse(msg);
-                $('#messages').append($('<li>').text(msg));
-                window.scrollTo(0, document.body.scrollHeight);
-            });
-        }
-
-        $('#msg_button').on('click', function () {
-            if(connected) {
-                var jsonObject = {
-                    sender: $('#username').text(),
-                    dest: $('#dest').val(),
-                    message: $('#msg').val()
-                };
-                $('#msg').val('');
-                socket.emit('channel', jsonObject);
-                socket.emit('channel2', jsonObject);
-
-                console.log("Send a message to", jsonObject[dest]);
-            }else {
-                console.log("Tried to send a message to");
-            }
-            console.log("Hello");
-        });*/
-
       });
     </script>
   </body>
