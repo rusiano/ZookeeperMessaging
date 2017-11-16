@@ -12,7 +12,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-class ZooHelper {
+public class ZooHelper {
 
     interface Codes {
         byte[] EXCEPTION = "-1".getBytes();
