@@ -1,14 +1,12 @@
 package com.company;
 
 import org.apache.zookeeper.KeeperException;
-import org.apache.zookeeper.WatchedEvent;
 import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -21,8 +19,9 @@ public class ZooHelper {
         byte[] NODE_EXISTS = "2".getBytes();
     }
 
-    final static long TIMEOUT_IN_NANOSECS = (long) (2 * Math.pow(10, 9));
+    final static long TIMEOUT_IN_NANOSECS = (long) (5 * Math.pow(10, 9)); // = 5 secs
 
+    // TODO: change final localhost into a custom ip:port adress (input by the user)
     private final static String LOCALHOST = "localhost:2181";
 
     private static ZooKeeper getConnection(String host) throws IOException, InterruptedException {
