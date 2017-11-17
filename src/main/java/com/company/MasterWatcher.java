@@ -107,7 +107,7 @@ public class MasterWatcher implements Watcher {
      * @throws KeeperException -
      * @throws InterruptedException -
      */
-    private void handleEnrollRequest(String user) throws KeeperException, InterruptedException {
+    void handleEnrollRequest(String user) throws KeeperException, InterruptedException {
 
         String enrollPath = "/request/enroll/" + user;
         String registryPath = "/registry/" + user;
@@ -134,7 +134,7 @@ public class MasterWatcher implements Watcher {
      * @throws KeeperException -
      * @throws InterruptedException -
      */
-    private void handleQuitRequest(String user) throws KeeperException, InterruptedException {
+    void handleQuitRequest(String user) throws KeeperException, InterruptedException {
 
         String quitPath = "/request/quit/" + user;
         String registryPath = "/registry/" + user;
@@ -218,8 +218,8 @@ public class MasterWatcher implements Watcher {
 
         // First of all, find who is the missing user by comparing online with queue:
         //  queue should differ from online only for the disconnected user
-        HashSet<String> leftOnlineUsers = new HashSet<String>(zoo.getChildren("/online", false));
-        HashSet<String> allOnlineUsers = new HashSet<String>(zoo.getChildren("/queue", false));
+        HashSet<String> leftOnlineUsers = new HashSet<>(zoo.getChildren("/online", false));
+        HashSet<String> allOnlineUsers = new HashSet<>(zoo.getChildren("/queue", false));
 
         // remove from the original set of all the online users, the users that are still online
         allOnlineUsers.removeAll(leftOnlineUsers);
