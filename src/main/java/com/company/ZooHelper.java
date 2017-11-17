@@ -21,6 +21,8 @@ public class ZooHelper {
         byte[] NODE_EXISTS = "2".getBytes();
     }
 
+    final static long TIMEOUT_IN_NANOSECS = (long) (2 * Math.pow(10, 9));
+
     private final static String LOCALHOST = "localhost:2181";
 
     private static ZooKeeper getConnection(String host) throws IOException, InterruptedException {
@@ -28,16 +30,12 @@ public class ZooHelper {
         final CountDownLatch connectionLatch = new CountDownLatch(1);
 
         // Create a connection with the given host
-        ZooKeeper zoo = new ZooKeeper(host, sessionTimeout, new Watcher() {
+        ZooKeeper zoo = new ZooKeeper(host, sessionTimeout, we -> {
 
-            @Override
-            public void process(WatchedEvent we) {
-
-                if (we.getState() == Event.KeeperState.SyncConnected) {
-                    connectionLatch.countDown();
-                }
-
+            if (we.getState() == Watcher.Event.KeeperState.SyncConnected) {
+                connectionLatch.countDown();
             }
+
         });
         connectionLatch.await(1, TimeUnit.SECONDS);
 
@@ -56,10 +54,7 @@ public class ZooHelper {
 
         try {
             return zoo.getData(path, null, null);
-        } catch (KeeperException e) {
-            e.printStackTrace();
-            return null;
-        } catch (InterruptedException e) {
+        } catch (KeeperException | InterruptedException e) {
             e.printStackTrace();
             return null;
         }
@@ -77,8 +72,6 @@ public class ZooHelper {
     static boolean exists(String path, ZooKeeper zoo) {
         try {
             return zoo.exists(path, null) != null;
-        } catch (KeeperException.NoNodeException e) {
-            return false;
         } catch (Exception e) {
             return false;
         }
