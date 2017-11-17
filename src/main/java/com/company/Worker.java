@@ -227,13 +227,15 @@ public class Worker implements Watcher {
         zoo.create(enrollUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         zoo.getData(enrollUserPath, this, null);
 
+        // the waiting phase lasts until the code is changed or the timeout is reached
         long initTime = System.nanoTime();
-        do { Thread.sleep(50); }
-        while (Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.NEW_CHILD) &&
-                (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOSECS);
+        do { Thread.sleep(10); }
+        while (Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.NEW_CHILD)
+                && (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOSECS);
 
         validEnroll = Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.SUCCESS);
 
+        // if the code it's still NEW_CHILD, the timeout was reached
         if (Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.NEW_CHILD))
             ZooHelper.print("<WARNING> Timeout reached because the server is not responding. Your request will be deleted.");
 
@@ -262,18 +264,26 @@ public class Worker implements Watcher {
         zoo.create(quitUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         zoo.getData(quitUserPath, this, null); //Setting watcher if code changes
 
-        do { Thread.sleep(50); }
-        while (Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
+        // the waiting phase lasts until the code is changed or the timeout is reached
+        long initTime = System.nanoTime();
+        do { Thread.sleep(10); }
+        while (Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.NEW_CHILD)
+                && (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOSECS);
 
-        if (Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.SUCCESS)) {
+        validQuit = Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.SUCCESS);
 
-            // delete the node in online, but leave the queue: the master will delete if after having moved the messages
-            if (ZooHelper.exists(onlineUserPath, zoo)) zoo.delete(onlineUserPath, -1);
-            validQuit = true;
-
-        } else {
-            validQuit = false;
+        // if the deregistration was successful, delete also the online node
+        if (validQuit) {
+            try {
+                zoo.delete(onlineUserPath, -1);
+            } catch (KeeperException.NoNodeException ignored) {
+                // if the user was not online there is nothing to delete
+            }
         }
+
+        // if the code it's still NEW_CHILD, the timeout was reached
+        if (Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.NEW_CHILD))
+            ZooHelper.print("<WARNING> Timeout reached because the server is not responding. Your request will be deleted.");
 
         zoo.delete(quitUserPath, -1);
         return validQuit;
@@ -303,15 +313,25 @@ public class Worker implements Watcher {
 
         zoo.exists(onlineUserPath, this);
 
-        // wait for the master to take some actions: either delete the node or change its code
-        do { Thread.sleep(50); }
-        while (ZooHelper.exists(onlineUserPath, zoo) && Arrays.equals(ZooHelper.getCode(onlineUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
+        // wait for the master to take some actions (either delete the node, change its code) or the timeout to be reached
+        long initTime = System.nanoTime();
+        do { Thread.sleep(10); }
+        while (ZooHelper.exists(onlineUserPath, zoo)
+                && Arrays.equals(ZooHelper.getCode(onlineUserPath, zoo), ZooHelper.Codes.NEW_CHILD)
+                && (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOSECS);
 
         // if the master deleted the online node, then the user wasn't registered
         if (!ZooHelper.exists(onlineUserPath, zoo))
             return false;
 
-        // if there are unread messages for the user, the master moved them to the queue: read them
+        // if the node is still there but the code is still NEW_CHILD, the timeout was reached and the node must be deleted
+        if (Arrays.equals(ZooHelper.getCode(onlineUserPath, zoo), ZooHelper.Codes.NEW_CHILD)) {
+            ZooHelper.print("<WARNING> Timeout reached because the server is not responding. Your request will be deleted.");
+            zoo.delete(onlineUserPath, -1);
+            return false;
+        }
+
+        // if the request was successful and there are unread messages for the user, the master moved them to the queue: read them
         List<String> unreadMessages = zoo.getChildren(queueUserPath, false);
         if (unreadMessages.size() > 0) {
             for (String message : unreadMessages) {
@@ -397,9 +417,7 @@ public class Worker implements Watcher {
                 // after having read the message, delete it and set the watcher for the next one
                 zoo.delete(triggerPath + "/" + nodeId, -1);
                 zoo.getChildren("/queue/" + this.id, this);
-            } catch (KeeperException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
+            } catch (KeeperException | InterruptedException e) {
                 e.printStackTrace();
             }
             //return;
