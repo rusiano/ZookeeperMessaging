@@ -1,0 +1,125 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Zookeeper chat based on Socket.IO chat</title>
+    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css"> 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"/>
+    <link rel="icon" href="data:;base64,=">
+    <style>
+      body { font: 13px Helvetica, Arial; }
+      #chat { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
+      #chat input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
+      #chat button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+      #messages { list-style-type: none; margin: 0; padding: 0; }
+      #messages li { padding: 5px 10px; }
+      #messages li:nth-child(odd) { background: #eee; }
+      #messages { margin-bottom: 40px }
+      #register_div { margin: 10% 20% 10% 20%; }
+      #register_div h2 { text-align : center; margin: 40px !important; }
+    </style>
+  </head>
+  <body>
+    <div class="" id="register_div">
+      <div class="w3-container w3-padding-64" >
+        <h2>Introduce your unique username</h2>
+        <div class="w3-row w3-section" style="vertical-align: center; display: inline;">
+          <div class="w3-third" style="width: 10%; display: inline-block; padding: 5%;"><i class="w3-xxlarge fa fa-user"></i></div>
+          <div class="w3-rest" style="width: 85%; display: inline-block; padding: 5%;" > 
+              <input class="w3-input w3-border" style="background: #eee;" name="username" type="text" placeholder="my username">
+          </div>
+        </div>
+              <button class="w3-button w3-block w3-section w3-ripple w3-padding" id="register_button">
+              <i class="fa fa-paper-plane"></i> Send Message!</button>
+      </div>
+    </div>
+
+    <ul id="messages"></ul>
+    <form action="" style="display: none" id="chat" onsubmit="return false;">
+      <div>Registered as<span id="username"></span></div>
+      <input id="dest" autocomplete="off" /><input id="msg" autocomplete="off" /><button id="msg_button">Send</button>
+    </form>
+    <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+    <script>
+      $(function () {
+          var ws = new WebSocket("ws://localhost:48080/");
+          var chat = false;
+
+          ws.onopen = function() {
+              console.log("Opened!");
+          };
+
+          ws.onmessage = function (data) {
+              var message = JSON.parse(data['data']);
+              console.log("Received Message. In the field data:", data['data']);
+
+              if(message['type']=='registration')
+                manage_register(message);
+              else if(message['type']=='chat')
+                manage_chat(message);
+              else
+                console.log(message);
+          };
+
+          function manage_register(message){
+              if(message['status']=='registered'){
+                 chat = true;
+                 $('#username').text($("input[name~='username']").val());
+                 $('#chat').css({'display':'block'});
+                 $('#register_div').toggle();
+              }
+              else
+                 alert("Error enrolling user");
+
+              console.log("Message: " + message);
+          }
+
+          function manage_chat(message){
+            if(message['dest'] && message['message']){
+                $('#messages').append($('<li>').text(message['dest']+": "+message['message']));
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+            else
+                alert("Error in chat reception");
+
+            console.log("Received message for chat: " + message);
+          }
+
+          $('#register_button').on('click', function(){
+            var jsonObject = {
+                    type: 'registration',
+                    username: $("input[name~='username']").val()
+            };
+            ws.send(JSON.stringify(jsonObject));
+            console.log('sending register of client', $("input[name~='username']").val());
+          });
+
+          ws.onclose = function() {
+              console.log("Closed!");
+          };
+
+          ws.onerror = function(err) {
+              console.log("Error: " + err);
+              console.error(err);
+          };
+
+
+          $('#msg_button').on('click', function () {
+            var jsonObject = {
+                type: "chat",
+                sender: $('#username').text(),
+                dest: $('#dest').val(),
+                msg: $('#msg').val()
+            };
+            if(chat) {
+                $('#msg').val('');
+                ws.send(JSON.stringify(jsonObject));
+
+            }else 
+                console.log("Tried to send a message to");
+            
+            console.log("Send a message to", jsonObject, $('#dest').val());
+        });
+      });
+    </script>
+  </body>
+</html>

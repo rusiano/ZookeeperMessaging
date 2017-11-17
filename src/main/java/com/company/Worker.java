@@ -176,9 +176,40 @@ public class Worker implements Watcher {
 
     }
 
-    ///
-    /// WORKER'S ACTIONS
-    ///
+    /**
+     * The method checks if the receiver specified is valid for a given user. More specifically, the receiver must be online
+     * and cannot be the sender itself.
+     * @param idReceiver The id of the receiver to be checked.
+     * @return true or false depending if the receiver in input is valid or not.
+     */
+    private boolean choosesValidReceiver(String idReceiver){
+
+        if (!ZooHelper.exists("/online/" + idReceiver, this.zoo)) {
+            ZooHelper.print("<ERROR> The receiver is not online. You cannot write to offline people!");
+            return false;
+        }
+
+        if (idReceiver.equals(this.id)) {
+            ZooHelper.print("<ERROR> You cannot write to yourself!");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Static method that returns the list of users currently online.
+     * @return The list containing all the ID's (String) of the online users.
+     * @throws KeeperException -
+     * @throws InterruptedException -
+     * @throws IOException -
+     */
+    private static List<String> getOnlineUsers() throws KeeperException, InterruptedException, IOException {
+        return ZooHelper.getConnection().getChildren("/online", false);
+
+    }
+
+    /* WORKER'S ACTIONS ***********************************************************************************************/
 
     /**
      * The method manages all the enrollment procedure for the client.
@@ -318,46 +349,7 @@ public class Worker implements Watcher {
         System.out.println(ZooHelper.timestamp());
     }
 
-    ///
-    /// USEFUL METHODS
-    ///
-
-    /**
-     * The method checks if the receiver specified is valid for a given user. More specifically, the receiver must be online
-     * and cannot be the sender itself.
-     * @param idReceiver The id of the receiver to be checked.
-     * @return true or false depending if the receiver in input is valid or not.
-     */
-    private boolean choosesValidReceiver(String idReceiver){
-
-        if (!ZooHelper.exists("/online/" + idReceiver, this.zoo)) {
-            ZooHelper.print("<ERROR> The receiver is not online. You cannot write to offline people!");
-            return false;
-        }
-
-        if (idReceiver.equals(this.id)) {
-            ZooHelper.print("<ERROR> You cannot write to yourself!");
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Static method that returns the list of users currently online.
-     * @return The list containing all the ID's (String) of the online users.
-     * @throws KeeperException -
-     * @throws InterruptedException -
-     * @throws IOException -
-     */
-    private static List<String> getOnlineUsers() throws KeeperException, InterruptedException, IOException {
-        return ZooHelper.getConnection().getChildren("/online", false);
-
-    }
-
-    ///
-    /// WATCHER LOGIC
-    ///
+    /* WATCHER'S METHODS **********************************************************************************************/
 
     /**
      * This process is inherited from Watcher interface. It is fired each time a watcher (that was set in a node)

@@ -8,10 +8,11 @@ import org.apache.zookeeper.ZooKeeper;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-class ZooHelper {
+public class ZooHelper {
 
     interface Codes {
         byte[] EXCEPTION = "-1".getBytes();
@@ -38,12 +39,12 @@ class ZooHelper {
 
             }
         });
-        connectionLatch.await(10, TimeUnit.SECONDS);
+        connectionLatch.await(1, TimeUnit.SECONDS);
 
         return zoo;
     }
 
-    static ZooKeeper getConnection() throws IOException, InterruptedException {
+    public static ZooKeeper getConnection() throws IOException, InterruptedException {
         return getConnection(LOCALHOST);
     }
 
@@ -91,4 +92,5 @@ class ZooHelper {
         System.out.println(timestamp() + message);
     }
 
+    
 }
