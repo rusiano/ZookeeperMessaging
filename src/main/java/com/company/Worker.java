@@ -126,8 +126,18 @@ public class Worker implements Watcher {
                     break;
                 }
 
-                if (choice.equals(ONLINE_USERS))
-                    Master.getOnlineUsers();
+                if (choice.equals(ONLINE_USERS)) {
+                    List<String> onlineUsers = getOnlineUsers();
+                    if (onlineUsers.size() == 0) {
+                        System.out.println(">>> No Users Online! ");
+                        break;
+                    }
+
+                    System.out.print(">>> Online Users: ");
+                    for (String anUser : onlineUsers)
+                        System.out.print(anUser + " | ");
+                    System.out.println();
+                }
 
                 if (choice.equals(NEW_MESSAGE)) {
 
@@ -166,28 +176,9 @@ public class Worker implements Watcher {
 
     }
 
-    /**
-     * The method checks if the receiver specified is valid for a given user. More specifically, the receiver must be online
-     * and cannot be the sender itself.
-     * @param idReceiver The id of the receiver to be checked.
-     * @return true or false depending if the receiver in input is valid or not.
-     */
-    private boolean choosesValidReceiver(String idReceiver){
-
-        if (!ZooHelper.exists("/online/" + idReceiver, this.zoo)) {
-            ZooHelper.print("<ERROR> The receiver is not online. You cannot write to offline people!");
-            return false;
-        }
-
-        if (idReceiver.equals(this.id)) {
-            ZooHelper.print("<ERROR> You cannot write to yourself!");
-            return false;
-        }
-
-        return true;
-    }
-
-    /* WORKER'S ACTIONS ***********************************************************************************************/
+    ///
+    /// WORKER'S ACTIONS
+    ///
 
     /**
      * The method manages all the enrollment procedure for the client.
@@ -205,14 +196,18 @@ public class Worker implements Watcher {
         zoo.create(enrollUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         zoo.getData(enrollUserPath, this, null);
 
+        long initTime = System.nanoTime();
         do { Thread.sleep(50); }
-        while (Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.NEW_CHILD));
+        while (Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.NEW_CHILD) &&
+                (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOSECS);
 
         validEnroll = Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.SUCCESS);
 
+        if (Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.NEW_CHILD))
+            ZooHelper.print("<WARNING> Timeout reached because the server is not responding. Your request will be deleted.");
+
         zoo.delete(enrollUserPath, -1);
         return validEnroll;
-
     }
 
 
@@ -323,7 +318,46 @@ public class Worker implements Watcher {
         System.out.println(ZooHelper.timestamp());
     }
 
-    /* WATCHER'S METHODS **********************************************************************************************/
+    ///
+    /// USEFUL METHODS
+    ///
+
+    /**
+     * The method checks if the receiver specified is valid for a given user. More specifically, the receiver must be online
+     * and cannot be the sender itself.
+     * @param idReceiver The id of the receiver to be checked.
+     * @return true or false depending if the receiver in input is valid or not.
+     */
+    private boolean choosesValidReceiver(String idReceiver){
+
+        if (!ZooHelper.exists("/online/" + idReceiver, this.zoo)) {
+            ZooHelper.print("<ERROR> The receiver is not online. You cannot write to offline people!");
+            return false;
+        }
+
+        if (idReceiver.equals(this.id)) {
+            ZooHelper.print("<ERROR> You cannot write to yourself!");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Static method that returns the list of users currently online.
+     * @return The list containing all the ID's (String) of the online users.
+     * @throws KeeperException -
+     * @throws InterruptedException -
+     * @throws IOException -
+     */
+    private static List<String> getOnlineUsers() throws KeeperException, InterruptedException, IOException {
+        return ZooHelper.getConnection().getChildren("/online", false);
+
+    }
+
+    ///
+    /// WATCHER LOGIC
+    ///
 
     /**
      * This process is inherited from Watcher interface. It is fired each time a watcher (that was set in a node)
