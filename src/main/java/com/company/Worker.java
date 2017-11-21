@@ -23,34 +23,34 @@ public class Worker implements Watcher {
     private ZooKeeper zoo;
     private boolean isLoginOk, isUsernameOk;
 
-    private Worker(ZooKeeper connection, String id) throws IOException, InterruptedException {
+    public Worker(ZooKeeper connection, String id) throws IOException, InterruptedException {
         this.id = id;
         this.zoo = connection;
         this.isLoginOk = false;
         this.isUsernameOk = false;
     }
 
-    private boolean isLoginOk() {
+    public boolean isLoginOk() {
         return this.isLoginOk;
     }
 
-    private boolean isUsernameOk() {
+    public boolean isUsernameOk() {
         return this.isUsernameOk;
     }
 
-    private void setLoginOk(boolean loginOk) {
+    public void setLoginOk(boolean loginOk) {
         this.isLoginOk = loginOk;
     }
 
-    private void setUsernameOk(boolean usernameOk) {
+    public void setUsernameOk(boolean usernameOk) {
         this.isUsernameOk = usernameOk;
     }
 
-    private String getId() {
+    public String getId() {
         return this.id;
     }
 
-    private ZooKeeper getZoo() {
+    public ZooKeeper getZoo() {
         return this.zoo;
     }
 
@@ -182,7 +182,7 @@ public class Worker implements Watcher {
      * @param idReceiver The id of the receiver to be checked.
      * @return true or false depending if the receiver in input is valid or not.
      */
-    private boolean choosesValidReceiver(String idReceiver){
+    public boolean choosesValidReceiver(String idReceiver){
 
         if (!ZooHelper.exists("/online/" + idReceiver, this.zoo)) {
             ZooHelper.print("<ERROR> The receiver is not online. You cannot write to offline people!");
@@ -204,7 +204,7 @@ public class Worker implements Watcher {
      * @throws InterruptedException -
      * @throws IOException -
      */
-    private static List<String> getOnlineUsers() throws KeeperException, InterruptedException, IOException {
+    public static List<String> getOnlineUsers() throws KeeperException, InterruptedException, IOException {
         return ZooHelper.getConnection().getChildren("/online", false);
 
     }
@@ -219,7 +219,7 @@ public class Worker implements Watcher {
      * @throws KeeperException -
      * @throws InterruptedException -
      */
-    private boolean enroll() throws KeeperException, InterruptedException {
+    public boolean enroll() throws KeeperException, InterruptedException {
 
         boolean validEnroll;
         String enrollUserPath = "/request/enroll/" + this.id;
@@ -255,7 +255,7 @@ public class Worker implements Watcher {
      * @throws KeeperException -
      * @throws InterruptedException -
      */
-    private boolean quit() throws KeeperException, InterruptedException {
+    public boolean quit() throws KeeperException, InterruptedException {
 
         boolean validQuit;
         String quitUserPath = "/request/quit/" + this.id;
@@ -298,7 +298,7 @@ public class Worker implements Watcher {
      * @throws KeeperException -
      * @throws InterruptedException -
      */
-    private boolean goOnline() throws KeeperException, InterruptedException {
+    public boolean goOnline() throws KeeperException, InterruptedException {
 
         String onlineUserPath = "/online/" + this.id;
         String queueUserPath = "/queue/" + this.id;
@@ -357,7 +357,7 @@ public class Worker implements Watcher {
      * @throws KeeperException -
      * @throws InterruptedException -
      */
-    private void write(String idReceiver, String message) throws KeeperException, InterruptedException {
+    public void write(String idReceiver, String message) throws KeeperException, InterruptedException {
 
         if (!ZooHelper.exists("/online/" + this.id, zoo)) {
             ZooHelper.print("<ERROR> You are not online. Go online first!");
@@ -367,6 +367,13 @@ public class Worker implements Watcher {
         zoo.create("/queue/" + idReceiver + "/" + this.id + ":"
                 + message, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
         System.out.println(ZooHelper.timestamp());
+    }
+
+    /**
+    * The method process a message sent to the process and detected by the watcher.
+    */
+    public void read(String sender, String message){
+        ZooHelper.print(sender  + ": " +  message);
     }
 
     /* WATCHER'S METHODS **********************************************************************************************/
@@ -412,8 +419,7 @@ public class Worker implements Watcher {
         if (triggerPath.contains("/queue/" + this.id) && triggerEvent == EventType.NodeChildrenChanged) {
             try {
                 String nodeId = zoo.getChildren(triggerPath, false).get(0);
-                ZooHelper.print(ZooHelper.getSender(nodeId) + ": " + ZooHelper.getMessage(nodeId));
-
+                this.read(ZooHelper.getSender(nodeId), ZooHelper.getMessage(nodeId));
                 // after having read the message, delete it and set the watcher for the next one
                 zoo.delete(triggerPath + "/" + nodeId, -1);
                 zoo.getChildren("/queue/" + this.id, this);
@@ -425,65 +431,16 @@ public class Worker implements Watcher {
 
     }
 
+
+    // When clients wants to leave => the zookeeper instance kills ephemeral nodes and make invalid the session
+    public boolean disconnect(){
+        try {
+            this.zoo.close();
+        } catch (Exception e) {
+            System.out.println("<ERROR>: trying to disconnect zoo worker. Error: "+ e.getMessage());
+            return false;
+        }
+        return true;
+    }
+
 }
-
-
-    /*
-    private String read() throws KeeperException, InterruptedException {
-
-        if (zoo.exists("/online/" + this.id, null) == null) {
-            ZooHelper.print("<ERROR> User " + this.id + " cannot read messages without being online. Go online first!");
-            return null;
-        }
-
-        if(zoo.exists("/queue/" + this.id, null) == null) {
-            ZooHelper.print("<ERROR> User " + this.id + " must have a /queue node where messages can be stored!");
-            return null;
-        }
-
-        List<String> messages = zoo.getChildren("/queue/"+ this.id, null);
-
-        if (messages.isEmpty()){
-            ZooHelper.print("<WARNING> No messages left in " + this.id + "'s inbox.");
-            return null;
-        }
-
-        //Collections.sort(messages, (left, right) -> Integer.parseInt(left.substring(left.length()-10)) - Integer.parseInt(right.substring(right.length()-10));
-        // Good Java :D
-        // Comparator used to get the message with lowest ID at a time
-        Comparator<String> message_comparator = new Comparator<String>() {
-            @Override
-            public int compare(String left, String right) {
-                return Integer.parseInt(left.substring(left.length()-9)) - Integer.parseInt((right.substring(right.length()-9))); // use your logic
-            }
-        };
-
-        Collections.sort(messages, message_comparator);
-        System.out.println(">>> READ Message for " + this.id + ":" + messages.get(0));
-        System.out.println("Number of message remaining: "+ (messages.size()-1));
-
-        String messageID = messages.get(0);
-        String messageContent = messageID.split(":")[1].replaceAll("[0-9]{10}", "");
-        System.out.println(messageContent + ";");
-
-        // delete the message from the queue as soon as it is read
-        zoo.delete("/queue/" + this.id + "/" + messageID, -1);
-
-        return messageContent;
-    }
-
-
-    private String readAll() throws KeeperException, InterruptedException {
-
-        String reply = read();
-        String longString = "";
-
-        while(reply != null) {
-            reply = read();
-            longString = longString + reply;
-        }
-
-        return longString;
-
-    }
-    */
