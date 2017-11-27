@@ -16,7 +16,7 @@ public class ZooHelper {
         byte[] EXCEPTION = "-1".getBytes();
         byte[] NEW_CHILD = "0".getBytes();
         byte[] SUCCESS = "1".getBytes();
-        byte[] NODE_EXISTS = "2".getBytes();
+        byte[] NODE_EXCEPTION = "2".getBytes();
     }
 
     final static long TIMEOUT_IN_NANOSECS = (long) (5 * Math.pow(10, 9)); // = 5 secs

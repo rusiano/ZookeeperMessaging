@@ -17,7 +17,7 @@ public class WorkerFactory extends WebSocketServer{
 
     private final static int port = 48080;
     private int last_worker_port;
-    HashMap<String, SocketConnectedWorker> workers_map;
+    private HashMap<String, SocketConnectedWorker> workers_map;
 
     public WorkerFactory() throws IOException, InterruptedException {
         super(new InetSocketAddress(port));
@@ -56,7 +56,7 @@ public class WorkerFactory extends WebSocketServer{
                 e.printStackTrace();
             }
 
-            if (new_worker.canEnroll() && new_worker.goOnline()) {
+            if (new_worker != null && new_worker.canEnroll() && new_worker.goOnline()) {
                 reply.put("type", "registration");
                 reply.put("status","registered");
                 reply.put("additional_message", "new_worker.getAddress().split('/')[1]");
@@ -83,7 +83,7 @@ public class WorkerFactory extends WebSocketServer{
         if(message.getString("type").equals("registration"))
             manage_registration(webSocket, message);
         else if("chat".equals(message.getString("type")) && message.has("dest") && message.has("sender") && message.has("msg")){
-            if(workers_map.get(webSocket.getRemoteSocketAddress().toString()).writewithAnswer(message.getString("dest"), message.getString("msg")))
+            if(workers_map.get(webSocket.getRemoteSocketAddress().toString()).writeWithAnswer(message.getString("dest"), message.getString("msg")))
                 reply.put("type","confirmation");
             else
                 reply.put("type","error");
