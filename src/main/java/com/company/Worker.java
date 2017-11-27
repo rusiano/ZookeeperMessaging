@@ -21,36 +21,37 @@ public class Worker implements Watcher {
 
     private String id;
     private ZooKeeper zoo;
-    private boolean isLoginOk, isUsernameOk;
+    private boolean isLoginOk, isUsernameOk, isRequestResultProcessed;
 
-    private Worker(ZooKeeper connection, String id) throws IOException, InterruptedException {
+    public Worker(ZooKeeper connection, String id) throws IOException, InterruptedException {
         this.id = id;
         this.zoo = connection;
         this.isLoginOk = false;
         this.isUsernameOk = false;
+        this.isRequestResultProcessed = false;
     }
 
-    private boolean isLoginOk() {
+    public boolean isLoginOk() {
         return this.isLoginOk;
     }
 
-    private boolean isUsernameOk() {
+    public boolean isUsernameOk() {
         return this.isUsernameOk;
     }
 
-    private void setLoginOk(boolean loginOk) {
+    public void setLoginOk(boolean loginOk) {
         this.isLoginOk = loginOk;
     }
 
-    private void setUsernameOk(boolean usernameOk) {
+    public void setUsernameOk(boolean usernameOk) {
         this.isUsernameOk = usernameOk;
     }
 
-    private String getId() {
+    public String getId() {
         return this.id;
     }
 
-    private ZooKeeper getZoo() {
+    public ZooKeeper getZoo() {
         return this.zoo;
     }
 
@@ -182,7 +183,7 @@ public class Worker implements Watcher {
      * @param idReceiver The id of the receiver to be checked.
      * @return true or false depending if the receiver in input is valid or not.
      */
-    private boolean choosesValidReceiver(String idReceiver){
+    public boolean choosesValidReceiver(String idReceiver){
 
         if (!ZooHelper.exists("/online/" + idReceiver, this.zoo)) {
             ZooHelper.print("<ERROR> The receiver is not online. You cannot write to offline people!");
@@ -204,7 +205,7 @@ public class Worker implements Watcher {
      * @throws InterruptedException -
      * @throws IOException -
      */
-    private static List<String> getOnlineUsers() throws KeeperException, InterruptedException, IOException {
+    public static List<String> getOnlineUsers() throws KeeperException, InterruptedException, IOException {
         return ZooHelper.getConnection().getChildren("/online", false);
 
     }
@@ -219,28 +220,31 @@ public class Worker implements Watcher {
      * @throws KeeperException -
      * @throws InterruptedException -
      */
-    private boolean enroll() throws KeeperException, InterruptedException {
+    public boolean enroll() throws KeeperException, InterruptedException {
 
-        boolean validEnroll;
         String enrollUserPath = "/request/enroll/" + this.id;
 
+        // create a node (= send a request to the master)
         zoo.create(enrollUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+        this.isRequestResultProcessed = false;
+
+        // set a watcher to be triggered when request result is ready
         zoo.getData(enrollUserPath, this, null);
 
-        // the waiting phase lasts until the code is changed or the timeout is reached
+        // wait for either (1) the watcher has finished processing the request result or (2) the timeout to be reached
         long initTime = System.nanoTime();
-        do { Thread.sleep(10); }
-        while (Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.NEW_CHILD)
-                && (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOSECS);
+        do {
+            Thread.sleep(10);
+        } while (!this.isRequestResultProcessed && (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOSECS);
 
-        validEnroll = Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.SUCCESS);
-
-        // if the code it's still NEW_CHILD, the timeout was reached
-        if (Arrays.equals(ZooHelper.getCode(enrollUserPath, zoo), ZooHelper.Codes.NEW_CHILD))
-            ZooHelper.print("<WARNING> Timeout reached because the server is not responding. Your request will be deleted.");
-
+        byte[] enrollmentCode = ZooHelper.getCode(enrollUserPath, zoo);
         zoo.delete(enrollUserPath, -1);
-        return validEnroll;
+
+        boolean timeoutReached = Arrays.equals(enrollmentCode, ZooHelper.Codes.NEW_CHILD);
+        if (timeoutReached) ZooHelper.print("<WARNING> Timeout reached because the server is not responding. " +
+                "Your request has been deleted.");
+
+        return Arrays.equals(enrollmentCode, ZooHelper.Codes.SUCCESS);
     }
 
 
@@ -255,38 +259,31 @@ public class Worker implements Watcher {
      * @throws KeeperException -
      * @throws InterruptedException -
      */
-    private boolean quit() throws KeeperException, InterruptedException {
+    public boolean quit() throws KeeperException, InterruptedException {
 
-        boolean validQuit;
         String quitUserPath = "/request/quit/" + this.id;
-        String onlineUserPath = "/online/" + this.id;
 
+        // create a node (= send a request to the master)
         zoo.create(quitUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
+        this.isRequestResultProcessed = false;
+
+        // set a watcher to be triggered when request result is ready
         zoo.getData(quitUserPath, this, null); //Setting watcher if code changes
 
-        // the waiting phase lasts until the code is changed or the timeout is reached
+        // wait for either (1) the watcher has finished processing the request result or (2) the timeout to be reached
         long initTime = System.nanoTime();
-        do { Thread.sleep(10); }
-        while (Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.NEW_CHILD)
-                && (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOSECS);
+        do {
+            Thread.sleep(10);
+        } while (!this.isRequestResultProcessed && (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOSECS);
 
-        validQuit = Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.SUCCESS);
-
-        // if the deregistration was successful, delete also the online node
-        if (validQuit) {
-            try {
-                zoo.delete(onlineUserPath, -1);
-            } catch (KeeperException.NoNodeException ignored) {
-                // if the user was not online there is nothing to delete
-            }
-        }
-
-        // if the code it's still NEW_CHILD, the timeout was reached
-        if (Arrays.equals(ZooHelper.getCode(quitUserPath, zoo), ZooHelper.Codes.NEW_CHILD))
-            ZooHelper.print("<WARNING> Timeout reached because the server is not responding. Your request will be deleted.");
-
+        byte[] quitCode = ZooHelper.getCode(quitUserPath, zoo);
         zoo.delete(quitUserPath, -1);
-        return validQuit;
+
+        boolean timeoutReached = Arrays.equals(quitCode, ZooHelper.Codes.NEW_CHILD);
+        if (timeoutReached) ZooHelper.print("<WARNING> Timeout reached because the server is not responding. " +
+                "Your request has been deleted.");
+
+        return Arrays.equals(quitCode, ZooHelper.Codes.SUCCESS);
     }
 
     /**
@@ -298,52 +295,34 @@ public class Worker implements Watcher {
      * @throws KeeperException -
      * @throws InterruptedException -
      */
-    private boolean goOnline() throws KeeperException, InterruptedException {
+    public boolean goOnline() throws KeeperException, InterruptedException {
 
         String onlineUserPath = "/online/" + this.id;
-        String queueUserPath = "/queue/" + this.id;
 
-        // create a node in "/online" to notify the master
+        // create a node in "/online" to notify (=send a request to) the master
         try {
             zoo.create(onlineUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+            this.isRequestResultProcessed = false;
         } catch (KeeperException.NodeExistsException e) {
             ZooHelper.print("<ERROR> Either you are trying to login without being registered or you are already online.");
             return false;
         }
 
+        // set a watcher to be triggered when request result is ready
         zoo.exists(onlineUserPath, this);
 
-        // wait for the master to take some actions (either delete the node, change its code) or the timeout to be reached
+        // wait for either (1) the watcher has finished processing the request result or (2) the timeout to be reached
         long initTime = System.nanoTime();
-        do { Thread.sleep(10); }
-        while (ZooHelper.exists(onlineUserPath, zoo)
-                && Arrays.equals(ZooHelper.getCode(onlineUserPath, zoo), ZooHelper.Codes.NEW_CHILD)
-                && (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOSECS);
+        do {
+            Thread.sleep(10);
+        } while (!this.isRequestResultProcessed && (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOSECS);
 
-        // if the master deleted the online node, then the user wasn't registered
-        if (!ZooHelper.exists(onlineUserPath, zoo))
-            return false;
+        byte[] onlineCode = ZooHelper.getCode(onlineUserPath, zoo);
 
-        // if the node is still there but the code is still NEW_CHILD, the timeout was reached and the node must be deleted
-        if (Arrays.equals(ZooHelper.getCode(onlineUserPath, zoo), ZooHelper.Codes.NEW_CHILD)) {
-            ZooHelper.print("<WARNING> Timeout reached because the server is not responding. Your request will be deleted.");
-            zoo.delete(onlineUserPath, -1);
-            return false;
-        }
+        boolean timeoutReached = Arrays.equals(onlineCode, ZooHelper.Codes.NEW_CHILD);
+        if (timeoutReached) ZooHelper.print("<WARNING> Timeout reached because the server is not responding. Your request will be deleted.");
 
-        // if the request was successful and there are unread messages for the user, the master moved them to the queue: read them
-        List<String> unreadMessages = zoo.getChildren(queueUserPath, false);
-        if (unreadMessages.size() > 0) {
-            for (String message : unreadMessages) {
-                ZooHelper.print("<INFO> New Unread Message: "
-                        + message.split(":")[1].replaceAll("[0-9]{10}", ""));
-            }
-        }
-
-        // once read all the old messages, set watcher for possible new incoming messages
-        zoo.getChildren(queueUserPath, this);
-
-        return true;
+        return Arrays.equals(onlineCode, ZooHelper.Codes.SUCCESS);
     }
 
 
@@ -357,7 +336,7 @@ public class Worker implements Watcher {
      * @throws KeeperException -
      * @throws InterruptedException -
      */
-    private void write(String idReceiver, String message) throws KeeperException, InterruptedException {
+    public void write(String idReceiver, String message) throws KeeperException, InterruptedException {
 
         if (!ZooHelper.exists("/online/" + this.id, zoo)) {
             ZooHelper.print("<ERROR> You are not online. Go online first!");
@@ -380,15 +359,21 @@ public class Worker implements Watcher {
     @Override
     public void process(WatchedEvent watchedEvent) {
 
+        this.isRequestResultProcessed = false;
+
         EventType triggerEvent = watchedEvent.getType();
         String triggerPath = watchedEvent.getPath();
         byte[] triggerCode = ZooHelper.getCode(triggerPath, zoo);
 
-        // NEW ENROLLMENT/QUIT REQUEST RESULT
-        if (triggerPath.contains("/request") && triggerEvent == EventType.NodeDataChanged) {
-            String requestType = triggerPath.split("/")[2];
+        boolean newEnrollmentRequestResult = triggerPath.contains("/enroll") && triggerEvent == EventType.NodeDataChanged;
+        boolean newQuitRequestResult = triggerPath.contains("/quit") && triggerEvent == EventType.NodeDataChanged;
+        boolean newLoginRequestResult = triggerPath.contains("/online") && triggerEvent == EventType.NodeDataChanged;
+        boolean newMessageReceived = triggerPath.contains("/queue/" + this.id) && triggerEvent == EventType.NodeChildrenChanged;
 
-            if (Arrays.equals(triggerCode, ZooHelper.Codes.NODE_EXISTS)) {
+        // NEW ENROLLMENT REQUEST RESULT
+        if (newEnrollmentRequestResult) {
+
+            if (Arrays.equals(triggerCode, ZooHelper.Codes.NODE_EXCEPTION)) {
 
                 if (ZooHelper.exists("/online/" + this.id, zoo))
                     ZooHelper.print("<WARNING> You are already online.");
@@ -397,19 +382,79 @@ public class Worker implements Watcher {
 
 
             } else if (Arrays.equals(triggerCode, ZooHelper.Codes.EXCEPTION))
-                ZooHelper.print("<ERROR> It was impossible to " + requestType + " due to unknown/unexpected reasons.");
+                ZooHelper.print("<ERROR> It was impossible to enroll due to unknown/unexpected reasons.");
 
-            return;
+        }
+
+        // NEW DEREGISTRATION REQUEST RESULT
+        else if (newQuitRequestResult) {
+
+            if (Arrays.equals(triggerCode, ZooHelper.Codes.SUCCESS)) {
+
+                try {
+                    zoo.delete(triggerPath.replace("/request/quit", "/online"), -1);
+                } catch (KeeperException.NoNodeException ignored) {
+                    // if the user was not online there is nothing to delete
+                } catch (KeeperException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            } else if (Arrays.equals(triggerCode, ZooHelper.Codes.EXCEPTION))
+                ZooHelper.print("<ERROR> It was impossible to remove your account due to unknown/unexpected reasons.");
+
         }
 
         // NEW ONLINE REQUEST RESULT
-        if (triggerPath.contains("/online") && triggerEvent == EventType.NodeDeleted) {
-            ZooHelper.print("<WARNING> You cannot go online without being registered. Try to register first.");
-            return;
+        else if (newLoginRequestResult) {
+
+            String queueUserPath = triggerPath.replace("/online", "/queue");
+
+            if (Arrays.equals(triggerCode, ZooHelper.Codes.SUCCESS)) {
+
+                // if the request was successful and there are unread messages for the user,
+                // the master moved them to the queue: read them
+                try {
+                    List<String> unreadMessages = zoo.getChildren(queueUserPath, false);
+                    if (unreadMessages.size() > 0) {
+                        for (String message : unreadMessages) {
+                            ZooHelper.print("<INFO> New Unread Message: "
+                                    + message.split(":")[1].replaceAll("[0-9]{10}", ""));
+                        }
+                    }
+                } catch (KeeperException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                // once read all the old messages, set watcher for possible new incoming messages
+                try {
+                    zoo.getChildren(queueUserPath, this);
+                } catch (KeeperException | InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+
+            } else {
+
+                // otherwise delete the invalid online user
+                try {
+                    zoo.delete(triggerPath, -1);
+                } catch (InterruptedException | KeeperException e) {
+                    e.printStackTrace();
+                }
+
+                // finally output the proper warning/error message
+                if (Arrays.equals(triggerCode, ZooHelper.Codes.NODE_EXCEPTION))
+                    ZooHelper.print("<ERROR> You cannot go online without being registered! Please register first!");
+                else
+                    ZooHelper.print("<WARNING> Login was rejected for unknown/unexpected reasons");
+
+            }
+
+
         }
 
         // NEW MESSAGE RECEIVED
-        if (triggerPath.contains("/queue/" + this.id) && triggerEvent == EventType.NodeChildrenChanged) {
+        else if (newMessageReceived) {
             try {
                 String nodeId = zoo.getChildren(triggerPath, false).get(0);
                 ZooHelper.print(ZooHelper.getSender(nodeId) + ": " + ZooHelper.getMessage(nodeId));
@@ -420,8 +465,11 @@ public class Worker implements Watcher {
             } catch (KeeperException | InterruptedException e) {
                 e.printStackTrace();
             }
-            //return;
+
         }
+
+
+        this.isRequestResultProcessed = true;
 
     }
 

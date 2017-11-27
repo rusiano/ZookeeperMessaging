@@ -74,24 +74,21 @@ public class MasterWatcher implements Watcher {
     /**
      * Given a path of a znode, the method returns the last children added (last created = first to process).
      * @param triggerPath The path of the znode where the watcher was triggered.
-     * @return The last children added.
-     * @throws KeeperException -
-     * @throws InterruptedException -
+     * @return The last children added at the specified path
      */
     private String getNewChild(String triggerPath) throws KeeperException, InterruptedException {
 
         String newChild = null;
-        try {
+        List<String> children = zoo.getChildren(triggerPath, false);
 
-            List<String> children = zoo.getChildren(triggerPath, false);
-
-            for (String child : children) {
-                byte[] child_code = ZooHelper.getCode(triggerPath + '/' + child, zoo);
-                if (Arrays.equals(child_code, ZooHelper.Codes.NEW_CHILD))
-                    newChild = child;
+        for (String child : children) {
+            byte[] child_code = ZooHelper.getCode(triggerPath + '/' + child, zoo);
+            if (Arrays.equals(child_code, ZooHelper.Codes.NEW_CHILD)) {
+                newChild = child;
+                break;
             }
+        }
 
-        } catch (KeeperException.NoNodeException ignored) { }
         return newChild;
     }
 
@@ -118,7 +115,7 @@ public class MasterWatcher implements Watcher {
             zoo.setData(enrollPath, ZooHelper.Codes.SUCCESS, -1);
         } catch (KeeperException.NodeExistsException e1) {
             ZooHelper.print("<WARNING> User " + user + " is already registered. Triggering failed enrollment for " + user);
-            zoo.setData(enrollPath, ZooHelper.Codes.NODE_EXISTS, -1);
+            zoo.setData(enrollPath, ZooHelper.Codes.NODE_EXCEPTION, -1);
         } catch (Exception e2) {
             ZooHelper.print("<ERROR> Enrollment failed due to unexpected exception " + e2.getMessage());
             zoo.setData(enrollPath, ZooHelper.Codes.EXCEPTION, -1);
@@ -142,7 +139,7 @@ public class MasterWatcher implements Watcher {
         try {
             zoo.delete(registryPath, -1);
         } catch (KeeperException.NoNodeException e1) {
-            zoo.setData(quitPath, ZooHelper.Codes.NODE_EXISTS, -1);
+            zoo.setData(quitPath, ZooHelper.Codes.NODE_EXCEPTION, -1);
             return;
         } catch (Exception e1) {
             zoo.setData(quitPath, ZooHelper.Codes.EXCEPTION, -1);
@@ -174,33 +171,40 @@ public class MasterWatcher implements Watcher {
         String queueUserPath    = "/queue/"    + user;
         String backupUserPath   = "/backup/"   + user;
 
-        // NON-VALID USER: delete the node added by the unregistered user and quit
+        // NON-VALID USER:
+        // Notify worker: change /online code
         if (!ZooHelper.exists(registryUserPath, zoo)) {
             ZooHelper.print("<ERROR> " + user + " cannot go online without being registered! He must register first!");
-            zoo.delete(onlineUserPath, -1);
+            zoo.setData(onlineUserPath, ZooHelper.Codes.NODE_EXCEPTION, -1);
             return;
         }
 
-        // Create a node for the user inbox (=queue); warning if there is a previous node (assuming fresh node)
+        // VALID USER:
+        // Notify worker: change /online node code and set a watcher to check when it will be deleted
+        zoo.setData(onlineUserPath, ZooHelper.Codes.SUCCESS, -1);
+        zoo.exists(onlineUserPath, this);    //
+
+        // Create inbox (=queue); warning if there is a previous node (assuming fresh node)
         try {
             zoo.create(queueUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.PERSISTENT);
         } catch (KeeperException.NodeExistsException e){
-            ZooHelper.print("<WARNING> " + user + " had an unexpected node in " + queueUserPath +" previously !");
+            ZooHelper.print("<WARNING> " + user + " already had an unexpected node in " + queueUserPath + ".");
         }
 
-        // If there is a node "/backup" and contains backed-up messages, retrieve them and move them to /queue.
-        // Then delete children znode and create again a fresh /backup/ID znode
+        // Create/retrieve backup:
+        // if there is a node "/backup" and it contains backed-up messages, retrieve them and move them to /queue.
         if (ZooHelper.exists(backupUserPath, zoo)) {
             List<String> messages = zoo.getChildren(backupUserPath, false);
             for (String message : messages)
                 zoo.create(queueUserPath + "/" + message, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);
+
+            // Then delete the old backed-up messages
             Master.deleteSubtree(backupUserPath);
         }
+        // in any case create a fresh /backup/ID znode
         zoo.create(backupUserPath, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
 
-        // NOTIFYING USER: changing /online node
-        zoo.setData(onlineUserPath, ZooHelper.Codes.SUCCESS, -1);
-        zoo.exists(onlineUserPath, this);    // set watcher to check when it will be deleted
+
     }
 
 
@@ -209,20 +213,16 @@ public class MasterWatcher implements Watcher {
      * - W: Deletes a node with his ID in "/online".
      * - M: If there are messages (znode children) in "/queue/id", the master will be move them to "/backup/id".
      * - M: Once everything is finish, the master deletes the znode "/queue/id" as well as its children.
-     *
-     *
-     * @throws KeeperException -
-     * @throws InterruptedException -
     */
     private void handleOfflineUser() throws KeeperException, InterruptedException {
 
         // First of all, find who is the missing user by comparing online with queue:
         //  queue should differ from online only for the disconnected user
-        HashSet<String> leftOnlineUsers = new HashSet<>(zoo.getChildren("/online", false));
+        HashSet<String> currentOnlineUsers = new HashSet<>(zoo.getChildren("/online", false));
         HashSet<String> allOnlineUsers = new HashSet<>(zoo.getChildren("/queue", false));
 
         // remove from the original set of all the online users, the users that are still online
-        allOnlineUsers.removeAll(leftOnlineUsers);
+        allOnlineUsers.removeAll(currentOnlineUsers);
 
         // in the resulting list now we have only the disconnected (missing) users
         for (String missingUser : allOnlineUsers) {
@@ -233,7 +233,6 @@ public class MasterWatcher implements Watcher {
 
             // Get all his unread messages (those still in the queue) and move them to the backup
             List<String> unreadMessages = zoo.getChildren(queueUserPath, false);
-
             for (String message : unreadMessages) {
                 try {
                     zoo.create(backupUserPath + "/" + message, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.CREATOR_ALL_ACL, CreateMode.PERSISTENT);
@@ -242,7 +241,7 @@ public class MasterWatcher implements Watcher {
             }
 
             // Once it's done, delete the queue
-            zoo.delete(queueUserPath, -1);
+            Master.deleteSubtree(queueUserPath);
 
         }
 
