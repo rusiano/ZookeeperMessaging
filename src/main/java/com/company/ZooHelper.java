@@ -19,7 +19,7 @@ public class ZooHelper {
         byte[] NODE_EXCEPTION = "2".getBytes();
     }
 
-    final static long TIMEOUT_IN_NANOSECS = (long) (5 * Math.pow(10, 9)); // = 5 secs
+    final static long TIMEOUT_IN_NANOS = (long) (30 * Math.pow(10, 9)); // = 30 secs
 
     // TODO: change final localhost into a custom ip:port adress (input by the user)
     private final static String LOCALHOST = "localhost:2181";
@@ -62,7 +62,7 @@ public class ZooHelper {
 
     byte[] getCode(String path) {
 
-        if (path == null || path.equals("") || !exists(path, zoo))
+        if (path == null || path.equals("") || !exists(path))
             return null;
 
         try {
@@ -74,20 +74,20 @@ public class ZooHelper {
 
     }
 
+    boolean exists(String path) {
+        try {
+            return zoo.exists(path, null) != null;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     static String getSender(String nodeId) {
         return nodeId.split(":")[0];
     }
 
     static String getMessage(String nodeId) {
         return nodeId.split(":")[1].replaceAll("[0-9]{10}", "");
-    }
-
-    static boolean exists(String path, ZooKeeper zoo) {
-        try {
-            return zoo.exists(path, null) != null;
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     static String timestamp() {

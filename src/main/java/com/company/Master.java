@@ -12,6 +12,7 @@ class Master{
     private static Scanner input = new Scanner(System.in);
 
     private static ZooKeeper zoo;
+    private static ZooHelper zooHelper;
     private static MasterWatcher watcher;
 
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
@@ -22,6 +23,7 @@ class Master{
         String auth = "user:pwd";
         zoo.addAuthInfo("digest", auth.getBytes());
 
+        zooHelper = new ZooHelper(zoo);     // Instantiate a helper
         watcher = new MasterWatcher(zoo);   //  Sets the master watcher
 
         do {
@@ -95,7 +97,7 @@ class Master{
     static void deleteSubtree(String rootPath) throws KeeperException, InterruptedException {
 
         // If non-existing node => warns and exits
-        if(!ZooHelper.exists(rootPath, zoo)) {
+        if(!zooHelper.exists(rootPath)) {
             ZooHelper.print("<WARNING> trying to delete a NON-existing node in path " + rootPath + ".");
             return;
         }

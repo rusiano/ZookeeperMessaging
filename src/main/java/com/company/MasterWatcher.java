@@ -139,9 +139,13 @@ public class MasterWatcher implements Watcher {
 
         String quitPath = "/request/quit/" + user;
         String registryPath = "/registry/" + user;
+        String queuePath = "/queue/" + user;
+        String backupPath = "/backup/" + user;
 
         try {
             zoo.delete(registryPath, -1);
+            Master.deleteSubtree(queuePath);
+            Master.deleteSubtree(backupPath);
         } catch (KeeperException.NoNodeException e1) {
             zoo.setData(quitPath, ZooHelper.Codes.NODE_EXCEPTION, -1);
             return;
@@ -177,7 +181,7 @@ public class MasterWatcher implements Watcher {
 
         // NON-VALID USER:
         // Notify worker: change /online code
-        if (!ZooHelper.exists(registryUserPath, zoo)) {
+        if (!zooHelper.exists(registryUserPath)) {
             ZooHelper.print("<ERROR> " + user + " cannot go online without being registered! He must register first!");
             zoo.setData(onlineUserPath, ZooHelper.Codes.NODE_EXCEPTION, -1);
             return;
@@ -197,7 +201,7 @@ public class MasterWatcher implements Watcher {
 
         // Create/retrieve backup:
         // if there is a node "/backup" and it contains backed-up messages, retrieve them and move them to /queue.
-        if (ZooHelper.exists(backupUserPath, zoo)) {
+        if (zooHelper.exists(backupUserPath)) {
             List<String> messages = zoo.getChildren(backupUserPath, false);
             for (String message : messages)
                 zoo.create(queueUserPath + "/" + message, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL);

@@ -193,7 +193,7 @@ public class Worker implements Watcher {
      */
     public boolean choosesValidReceiver(String idReceiver){
 
-        if (!ZooHelper.exists("/online/" + idReceiver, this.zoo)) {
+        if (!zooHelper.exists("/online/" + idReceiver)) {
             ZooHelper.print("<ERROR> The receiver is not online. You cannot write to offline people!");
             return false;
         }
@@ -358,7 +358,7 @@ public class Worker implements Watcher {
      */
     public void write(String idReceiver, String message) throws KeeperException, InterruptedException {
 
-        if (!ZooHelper.exists("/online/" + this.id, zoo)) {
+        if (!zooHelper.exists("/online/" + this.id)) {
             ZooHelper.print("<ERROR> You are not online. Go online first!");
             return;
         }
@@ -431,7 +431,7 @@ public class Worker implements Watcher {
             // Show the error messages
             if (Arrays.equals(triggerCode, ZooHelper.Codes.NODE_EXCEPTION)) {
 
-                if (ZooHelper.exists("/online/" + this.id, zoo))
+                if (zooHelper.exists("/online/" + this.id))
                     ZooHelper.print("<WARNING> You are already online.");
                 else
                     ZooHelper.print("<WARNING> This username has already been taken.");
