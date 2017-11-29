@@ -8,9 +8,21 @@
     <link rel="icon" href="data:;base64,=">
     <style>
       body { font: 13px Helvetica, Arial; }
-      #chat { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      #chat input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      #chat button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
+
+      #register_master_view { margin: 10% 20% 10% 20%; height: 100%;}
+      #register_master_view h2 { text-align : center; margin: 40px !important; }
+
+      #chat_master_view {display: none; position: absolute; background: white; height: 100%; width: 100%;  padding: 64px; background:  	#D3D3D3;}
+      #online_users_view {background: #90EE90; height: 100%; position: relative;}
+      #online_users_view #registration_name { bottom: 0; display: block;border: 0; text-align: center; padding: 10px; width: 100%; position: absolute; }
+      #online_users_view #registration_name #username { font-size: bold; }
+
+      #chat_view { height: 100%; position: relative; background: #F5F5DC;}
+      #chat { background: #000; padding: 10px; position: absolute; bottom: 0; width: 100%; }
+      #chat #dest { margin:0 1% 0 1%; width: 10%; position: relative;}
+      #chat #msg { margin: 0 1% 0 1%; width: 65%; position: relative;}
+      #chat button { width: 18%; background: rgb(130, 224, 255); border: none; height: 40px; margin: 0 1% 0 1% 0; position: relative;}
+      #chat button::after {content: " Send!";}
       #messages { list-style-type: none; margin: 0; padding: 0; }
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
@@ -19,12 +31,26 @@
       #online_users li { padding: 5px 10px; }
       #online_users li:nth-child(odd) { background: #eee; }
       #online_users { margin-bottom: 40px }
-      #register_div { margin: 10% 20% 10% 20%; }
-      #register_div h2 { text-align : center; margin: 40px !important; }
+
+      @media only screen and (max-width: 600px){
+        #chat_master_view{
+          padding: 16px;
+        }
+
+        #chat_master_view, #online_users_view, #chat_view{
+          min-height: 240px;
+          height: auto;
+        }
+
+        #chat button::after {
+          content: "";
+        }
+
+      }
     </style>
   </head>
   <body>
-    <div class="w3-row" id="register_div">
+    <div class="w3-row" id="register_master_view">
       <div class="w3-half w3-container w3-padding-64" >
         <h2>ZKChat</h2>
         <div class="w3-row w3-section" style="vertical-align: center; display: inline;">
@@ -48,14 +74,31 @@
       </div>
     </div>
 
-    <ul id="messages"></ul>
-    <form action="" style="display: none" id="chat" onsubmit="return false;">
-      <div>Registered as<span id="username"></span></div>
-      <input id="dest" autocomplete="off" /><input id="msg" autocomplete="off" /><button id="msg_button">Send</button>
-    </form>
+    <div id="chat_master_view" class="w3-row">
+      <div id="online_users_view" class="w3-third w3-content">
+        <h3 style="margin: 40px">Online Users</h3>
+        <ul class="online_users"></ul>
+        <div id="registration_name" style="color: black;">Registered as <span id="username"></span></div>
+      </div>
+      <div id="chat_view" class="w3-twothird w3-content">
+        <ul id="messages"></ul>
+        <form action="" style="background: white; display:inline-block" id="chat" onsubmit="return false;">
+          <input id="dest" autocomplete="off" placeholder="Dest" />
+          <input id="msg" autocomplete="off" placeholder="Message"/>
+          <button id="msg_button"><i class="fa fa-paper-plane"></i></button>
+        </form>
+      </div>
+    </div>
     <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
     <script>
       $(function () {
+
+          chat = true;
+          $('#username').text($("input[name~='username']").val());
+          $('#chat_master_view').css({'display':'block'});
+          $('#register_master_view').toggle();
+
+
           var ws = new WebSocket("ws://localhost:48080/");
           var ws_users = new WebSocket("ws://localhost:48081/");
           var online_users = {};
@@ -89,10 +132,10 @@
 
           function manage_register(message){
               if(message['status']=='registered'){
-                 chat = true;
-                 $('#username').text($("input[name~='username']").val());
-                 $('#chat').css({'display':'block'});
-                 $('#register_div').toggle();
+                chat = true;
+                $('#username').text($("input[name~='username']").val());
+                $('#chat_master_view').css({'display':'block'});
+                $('#register_master_view').toggle();
               }
               else
                  alert("Error enrolling user");
