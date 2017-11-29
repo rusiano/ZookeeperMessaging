@@ -82,12 +82,13 @@ public class Worker implements Watcher {
 
                 boolean toEnroll = (inputCommand == SIGN_UP);
 
+                String inputId;
                 do {
 
                     System.out.println("<< ENTER ^C TO CLOSE THIS PROMPT. >>");
                     System.out.print("> Username: ");
 
-                    String inputId = input.nextLine().replace(" ", "");
+                    inputId = input.nextLine().replace(" ", "");
 
                     if (inputId.equals(CLOSE)) {
                         user = null;
@@ -101,16 +102,16 @@ public class Worker implements Watcher {
 
                 } while (!user.isUsernameOk());
 
-                // sign in (verifying that the user has been initialized and it was indeed registered)
-                if (user != null) {
-                    if (toEnroll) {
-                        System.out.println();
-                        System.out.println("=== REGISTRATION SUCCESSFUL ===");
-                    }
+                if (user == null)
+                    continue;
 
-                    user.setLoginOk( user.goOnline() );
+                // sign in (verifying that the user has been initialized and it was indeed registered)
+                if (toEnroll) {
+                    System.out.println();
+                    System.out.println("=== REGISTRATION SUCCESSFUL ===");
                 }
 
+                user.setLoginOk(user.login());
 
             } while (user == null || !user.isLoginOk());
 
@@ -235,14 +236,8 @@ public class Worker implements Watcher {
         // set a watcher to be triggered when request result is ready and show the corresponding informative message
         zoo.getData(enrollUserPath, this, null);
 
-        // wait for either (1) the master has finished processing the request result or (2) the timeout to be reached
-        byte[] enrollmentCode;
-        long initTime = System.nanoTime();
-        do {
-            Thread.sleep(100);
-            enrollmentCode = zooHelper.getCode(enrollUserPath);
-        } while (Arrays.equals(enrollmentCode, ZooHelper.Codes.NEW_CHILD)
-                && (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOSECS);
+        // wait for the default code to be changed
+        byte[] enrollmentCode = waitForUpdatedCode(enrollUserPath);
 
         // show corresponding message if timeout is reached
         boolean timeoutReached = Arrays.equals(enrollmentCode, ZooHelper.Codes.NEW_CHILD);
@@ -274,14 +269,8 @@ public class Worker implements Watcher {
         // set a watcher to be triggered when request result is ready and show the corresponding informative message
         zoo.getData(quitUserPath, this, null);
 
-        // wait for either (1) the master has finished processing the request result or (2) the timeout to be reached
-        byte[] quitCode;
-        long initTime = System.nanoTime();
-        do {
-            Thread.sleep(100);
-            quitCode = zooHelper.getCode(quitUserPath);
-        } while (Arrays.equals(quitCode, ZooHelper.Codes.NEW_CHILD)
-                && (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOSECS);
+        // wait for the default code to be changed
+        byte[] quitCode = waitForUpdatedCode(quitUserPath);
 
         // show corresponding message if timeout is reached
         boolean timeoutReached = Arrays.equals(quitCode, ZooHelper.Codes.NEW_CHILD);
@@ -302,7 +291,7 @@ public class Worker implements Watcher {
      * @throws KeeperException -
      * @throws InterruptedException -
      */
-    public boolean goOnline() throws KeeperException, InterruptedException {
+    public boolean login() throws KeeperException, InterruptedException {
 
         // create a node in "/online" to notify (=send a request to) the master
         try {
@@ -315,14 +304,8 @@ public class Worker implements Watcher {
         // set a watcher to be triggered when result is available and to output the appropriate informative message
         zoo.exists(onlineUserPath, this);
 
-        // wait for either (1) the watcher has finished processing the request result or (2) the timeout to be reached
-        byte[] onlineCode;
-        long initTime = System.nanoTime();
-        do {
-            Thread.sleep(100);
-            onlineCode = zooHelper.getCode(onlineUserPath);
-        } while (Arrays.equals(onlineCode, ZooHelper.Codes.NEW_CHILD)
-                && (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOSECS);
+        // wait for the default code to be changed
+        byte[] onlineCode = waitForUpdatedCode(onlineUserPath);
 
         // delete the request in case it is invalid and return negative outcome
         if (!Arrays.equals(onlineCode, ZooHelper.Codes.SUCCESS)) {
@@ -383,6 +366,38 @@ public class Worker implements Watcher {
         zoo.create("/queue/" + idReceiver + "/" + this.id + ":"
                 + message, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
         System.out.println(ZooHelper.timestamp());
+    }
+
+    /* UTILS **********************************************************************************************************/
+
+    /**
+     * The method waits for the original code of the znode at the specified node to change and returns the updated code
+     * as soon as it is available.
+     * @param path The path of the znode.
+     * @return The updated code of the znode specified in input. Please notice that if the timeout is reached the method
+     * can return the default code.
+     */
+    private byte[] waitForUpdatedCode(String path) throws InterruptedException {
+
+        byte[] resultCode;
+        long elapsedTime;
+        boolean alertShown = false;
+        long initTime = System.nanoTime();
+        do {
+            Thread.sleep(50);
+            resultCode = zooHelper.getCode(path);
+
+            elapsedTime = System.nanoTime() - initTime;
+            if (elapsedTime >= (ZooHelper.TIMEOUT_IN_NANOS / 2) && !alertShown) {
+                ZooHelper.print("<WARNING> It seems the master is not responding. The system will wait for 15secs" +
+                        "more before deleting your request");
+                alertShown = true;
+            }
+
+        } while (Arrays.equals(resultCode, ZooHelper.Codes.NEW_CHILD)
+                && (System.nanoTime() - initTime) < ZooHelper.TIMEOUT_IN_NANOS);
+
+        return resultCode;
     }
 
     /* WATCHER'S METHODS **********************************************************************************************/
