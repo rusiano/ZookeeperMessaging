@@ -7,9 +7,13 @@ import org.apache.zookeeper.Watcher.Event.EventType;
 public class MasterWatcher implements Watcher {
 
     private ZooKeeper zoo;
+    private ZooHelper zooHelper;
 
     MasterWatcher(ZooKeeper zoo) {
+
         this.zoo = zoo;
+        this.zooHelper = new ZooHelper(this.zoo);
+
     }
 
     /**
@@ -82,7 +86,7 @@ public class MasterWatcher implements Watcher {
         List<String> children = zoo.getChildren(triggerPath, false);
 
         for (String child : children) {
-            byte[] child_code = ZooHelper.getCode(triggerPath + '/' + child, zoo);
+            byte[] child_code = zooHelper.getCode(triggerPath + '/' + child);
             if (Arrays.equals(child_code, ZooHelper.Codes.NEW_CHILD)) {
                 newChild = child;
                 break;

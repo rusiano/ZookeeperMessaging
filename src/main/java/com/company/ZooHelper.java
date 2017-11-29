@@ -24,6 +24,20 @@ public class ZooHelper {
     // TODO: change final localhost into a custom ip:port adress (input by the user)
     private final static String LOCALHOST = "localhost:2181";
 
+    private ZooKeeper zoo;
+
+    public ZooHelper() {
+        try {
+            this.zoo = getConnection(LOCALHOST);
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public ZooHelper(ZooKeeper zoo) {
+        this.zoo = zoo;
+    }
+
     private static ZooKeeper getConnection(String host) throws IOException, InterruptedException {
         int sessionTimeout = 3000;
         final CountDownLatch connectionLatch = new CountDownLatch(1);
@@ -46,7 +60,7 @@ public class ZooHelper {
     }
 
 
-    static byte[] getCode(String path, ZooKeeper zoo) {
+    byte[] getCode(String path) {
 
         if (path == null || path.equals("") || !exists(path, zoo))
             return null;
