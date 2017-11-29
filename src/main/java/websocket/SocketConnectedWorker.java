@@ -62,10 +62,10 @@ public class SocketConnectedWorker extends Worker {
 
     //Overrided for error management
     @Override
-    public boolean goOnline() {
+    public boolean login() {
         boolean result = true;
         try {
-            result = super.goOnline();
+            result = super.login();
         } catch (Exception e) {
             return false;
         }

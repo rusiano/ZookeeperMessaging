@@ -56,7 +56,7 @@ public class WorkerFactory extends WebSocketServer{
                 e.printStackTrace();
             }
 
-            if (new_worker != null && new_worker.canEnroll() && new_worker.goOnline()) {
+            if (new_worker != null && new_worker.canEnroll() && new_worker.login()) {
                 reply.put("type", "registration");
                 reply.put("status","registered");
                 reply.put("additional_message", "new_worker.getAddress().split('/')[1]");
