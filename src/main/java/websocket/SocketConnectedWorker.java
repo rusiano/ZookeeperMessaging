@@ -13,7 +13,7 @@ public class SocketConnectedWorker extends Worker {
     private String id;
     private WebSocket client;
 
-    public SocketConnectedWorker(String id, WebSocket client) throws IOException, InterruptedException {
+    SocketConnectedWorker(String id, WebSocket client) throws IOException, InterruptedException {
         super(ZooHelper.getConnection(), id);
         this.id = id;
         this.client = client;
@@ -39,7 +39,7 @@ public class SocketConnectedWorker extends Worker {
     }
 
 
-    public boolean writewithAnswer(String idReceiver, String message) {
+    public boolean writeWithAnswer(String idReceiver, String message) {
         try {
             super.write(idReceiver, message);
         } catch (Exception e) {
@@ -50,7 +50,7 @@ public class SocketConnectedWorker extends Worker {
 
     //The method enrolls return without error if the node can be enroll
     // otherwise the zookeeper throws an error and, in that case, the method returns false UNLESS the node exists error
-    public boolean canEnroll(){
+    boolean canEnroll(){
         try {
                 super.enroll();
         }

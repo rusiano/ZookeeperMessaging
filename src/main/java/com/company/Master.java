@@ -7,6 +7,8 @@ import org.apache.zookeeper.*;
 
 class Master{
 
+    private static final String YES = "Y";
+    private static final String NO = "N";
     private static Scanner input = new Scanner(System.in);
 
     private static ZooKeeper zoo;
@@ -26,12 +28,12 @@ class Master{
             System.out.print("> Do you want to completely remove the previous tree structure (Y/N)? ");
             String answer = input.nextLine().toUpperCase();
 
-            if (answer.equals("Y")) {
+            if (answer.equals(YES)) {
                 removeTreeStructure();      // Removes previous tree structure
                 createTreeStructure();
                 setWatchers();
                 break;
-            } else if (answer.equals("N")) {
+            } else if (answer.equals(NO)) {
                 manageUnprocessedRequests();
                 setWatchers();
                 break;
@@ -66,8 +68,6 @@ class Master{
 
     /**
      * Creates a new clean tree structure.
-     * @throws KeeperException -
-     * @throws InterruptedException -
      */
     private static void createTreeStructure() throws KeeperException, InterruptedException {
 
@@ -91,8 +91,6 @@ class Master{
     /**
      * The method recursively deletes all the subtree that has as its root the node specified in input.
      * @param rootPath Path of the root node whose subtree has to be deleted
-     * @throws KeeperException -
-     * @throws InterruptedException -
      */
     static void deleteSubtree(String rootPath) throws KeeperException, InterruptedException {
 
@@ -130,6 +128,10 @@ class Master{
         } catch (Exception e) { e.printStackTrace(); }
 
     }
+
+    /**
+     * Checks for any unprocessed requests sent by workers and forwards them to the watcher.
+     */
 
     private static void manageUnprocessedRequests() throws KeeperException, InterruptedException {
 
