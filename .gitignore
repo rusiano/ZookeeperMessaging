@@ -1,10 +1,13 @@
 # Intellij Files
 .idea
 
-# Compiled files
+# Compiled files and maven files
 *.class
+target
 
 # Temporal files
 ~*
 *.copy
 *.old
+*.out
+*.iml
