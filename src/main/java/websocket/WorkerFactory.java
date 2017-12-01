@@ -19,10 +19,12 @@ public class WorkerFactory extends WebSocketServer{
     private int last_worker_port;
     private HashMap<String, SocketConnectedWorker> workers_map;
 
+
     public WorkerFactory() throws IOException, InterruptedException {
         super(new InetSocketAddress(port));
         this.last_worker_port = port+1;
         this.workers_map  = new HashMap<String, SocketConnectedWorker>();
+
     }
 
     @Override
@@ -34,7 +36,7 @@ public class WorkerFactory extends WebSocketServer{
     public void onClose(WebSocket webSocket, int i, String s, boolean b) {
         System.out.println("Factory: Closed connection from:" + webSocket.getRemoteSocketAddress().toString());
         SocketConnectedWorker worker = workers_map.remove(webSocket.getRemoteSocketAddress().toString());
-        //worker.disconnect();
+        worker.disconnect();
     }
 
 
@@ -100,7 +102,7 @@ public class WorkerFactory extends WebSocketServer{
     @Override
     public void onError(WebSocket webSocket, Exception e) {
         System.out.println("Error with socket and exception: \'" + e.getMessage() + "\'");
-        System.exit(1);
+        //System.exit(1);
     }
 
 

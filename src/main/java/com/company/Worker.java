@@ -82,13 +82,12 @@ public class Worker implements Watcher {
 
                 boolean toEnroll = (inputCommand == SIGN_UP);
 
-                String inputId;
                 do {
 
                     System.out.println("<< ENTER ^C TO CLOSE THIS PROMPT. >>");
                     System.out.print("> Username: ");
 
-                    inputId = input.nextLine().replace(" ", "");
+                    String inputId = input.nextLine().replace(" ", "");
 
                     if (inputId.equals(CLOSE)) {
                         user = null;
@@ -429,7 +428,6 @@ public class Worker implements Watcher {
      */
     @Override
     public void process(WatchedEvent watchedEvent) {
-
 
         EventType triggerEvent = watchedEvent.getType();
         String triggerPath = watchedEvent.getPath();

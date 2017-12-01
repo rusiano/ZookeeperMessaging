@@ -19,7 +19,7 @@ public class SocketConnectedWorker extends Worker {
         this.client = client;
     }
 
-    //@Override
+    @Override
     public void read(String sender, String message) {
         JSONObject obj = new JSONObject();
         obj.put("type", "chat");
@@ -39,7 +39,7 @@ public class SocketConnectedWorker extends Worker {
     }
 
 
-    boolean writeWithAnswer(String idReceiver, String message) {
+    public boolean writeWithAnswer(String idReceiver, String message) {
         try {
             super.write(idReceiver, message);
         } catch (Exception e) {
