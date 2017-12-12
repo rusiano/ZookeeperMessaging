@@ -1,6 +1,7 @@
 package websocket;
 
-import com.company.Worker;
+import com.company.ZooHelper;
+import org.apache.zookeeper.ZooKeeper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -8,18 +9,21 @@ import org.json.JSONObject;
 
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class OnlineUserKeepAlive extends WebSocketServer {
 
     private final static int port = 48081;
     private List<WebSocket> keepalive_list;
+    private ZooKeeper zoo;
 
 
     public OnlineUserKeepAlive(){
         super(new InetSocketAddress(port));
         this.keepalive_list = new ArrayList<WebSocket>();
+        try {
+            this.zoo = ZooHelper.getConnection();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
 
@@ -45,7 +49,7 @@ public class OnlineUserKeepAlive extends WebSocketServer {
         while(true){
 
             try {
-                onlineUsers = Worker.getOnlineUsers();
+                onlineUsers = zoo.getChildren("/online", false);
                 //onlineUsers = Arrays.asList("sup1", "sup2", "sup3");
                 onlineUsers_message.put("users", onlineUsers);
 
