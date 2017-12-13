@@ -40,6 +40,16 @@ public class WorkerFactory extends WebSocketServer{
     }
 
 
+    protected SocketConnectedWorker create_worker(String id, WebSocket websocket){
+        SocketConnectedWorker new_worker = null;
+        try {
+            new_worker = new SocketConnectedWorker(id, websocket);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return new_worker;
+    }
+
     private void manage_registration(WebSocket webSocket, JSONObject message){
         JSONObject reply = new JSONObject();
         if( message.get("username") == null || "".equals(message.get("username"))) {
@@ -51,12 +61,7 @@ public class WorkerFactory extends WebSocketServer{
             reply.put("additional_message", "username already online");
         }
         else {
-            SocketConnectedWorker new_worker = null;
-            try {
-                new_worker = new SocketConnectedWorker(message.get("username").toString(), webSocket);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            SocketConnectedWorker new_worker = create_worker(message.get("username").toString(),webSocket);
 
             if (new_worker != null && new_worker.canEnroll() && new_worker.login()) {
                 reply.put("type", "registration");

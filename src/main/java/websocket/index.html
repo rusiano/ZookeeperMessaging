@@ -93,12 +93,6 @@
     <script>
       $(function () {
 
-          chat = true;
-          $('#username').text($("input[name~='username']").val());
-          $('#chat_master_view').css({'display':'block'});
-          $('#register_master_view').toggle();
-
-
           var ws = new WebSocket("ws://localhost:48080/");
           var ws_users = new WebSocket("ws://localhost:48081/");
           var online_users = {};
