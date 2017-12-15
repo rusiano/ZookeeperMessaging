@@ -371,7 +371,7 @@ public class Worker implements Watcher {
     * The method process a message sent to the process and detected by the watcher.
     */
     public void read(String sender, String message){
-        ZooHelper.print(sender  + ": " +  message);
+        ZooHelper.print("READ METHOD: " + sender  + ": " +  message);
     }
 
     // When clients wants to leave => the zookeeper instance kills ephemeral nodes and make invalid the session
@@ -484,7 +484,7 @@ public class Worker implements Watcher {
         if (newMessageReceived) {
             try {
                 String nodeId = zoo.getChildren(triggerPath, false).get(0);
-                this.read(ZooHelper.getSender(nodeId), ZooHelper.getMessage(nodeId));
+                //this.read(ZooHelper.getSender(nodeId), ZooHelper.getMessage(nodeId));
                 ZooHelper.print(ZooHelper.getSender(nodeId) + ": " + ZooHelper.getMessage(nodeId));
 
                 // after having read the message, delete it and set the watcher for the next one
