@@ -33,4 +33,4 @@ Tested with ubuntu 16.04
 ### Authors
 
 - [Marcos Bernal](https://github.com/MarcosBernal)
-- [Massimiliano Rusiano](https://github.com/rusiano)
+- [Massimiliano Russo](https://github.com/rusiano)
