@@ -26,15 +26,15 @@ class Master{
         zooHelper = new ZooHelper(zoo);     // Instantiate a helper
         watcher = new MasterWatcher(zoo);   //  Sets the master watcher
 
-        do {
+        /*do {
             System.out.print("> Do you want to completely remove the previous tree structure (Y/N)? ");
             String answer = input.nextLine().toUpperCase();
 
-            if (answer.equals(YES)) {
+            if (answer.equals(YES)) {*/
                 removeTreeStructure();      // Removes previous tree structure
                 createTreeStructure();
                 setWatchers();
-                break;
+                /*break;
             } else if (answer.equals(NO)) {
                 manageUnprocessedRequests();
                 setWatchers();
@@ -43,12 +43,13 @@ class Master{
 
             System.out.println("<ERROR> " + answer + " is not a valid command. Please retry.");
 
-        } while (true);
+        } while (true);*/
 
         System.out.println("<<< ENTER ANY KEY AT ANY TIME TO STOP THE MASTER. >>>");
-        System.out.println("> Master is running...");
-        input.nextLine();
-        System.out.println("> Stopping the master...");
+        System.out.println("> Master is running ...");
+        while(true) Thread.sleep(100);
+        //input.nextLine();
+        //System.out.println("> Stopping the master ...");
     }
 
     /**

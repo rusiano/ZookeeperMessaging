@@ -484,8 +484,8 @@ public class Worker implements Watcher {
         if (newMessageReceived) {
             try {
                 String nodeId = zoo.getChildren(triggerPath, false).get(0);
-                //this.read(ZooHelper.getSender(nodeId), ZooHelper.getMessage(nodeId));
-                ZooHelper.print(ZooHelper.getSender(nodeId) + ": " + ZooHelper.getMessage(nodeId));
+                this.read(ZooHelper.getSender(nodeId), ZooHelper.getMessage(nodeId));
+                //ZooHelper.print(ZooHelper.getSender(nodeId) + ": " + ZooHelper.getMessage(nodeId));
 
                 // after having read the message, delete it and set the watcher for the next one
                 zoo.delete(triggerPath + "/" + nodeId, -1);
