@@ -8,7 +8,18 @@
 
 Tested with ubuntu 16.04
 
-## How to use it (script on the way)
+## How to use it
+
+Two different ways
+
+### Building an image with docker and executed afterwards
+
+1. Move to the folder where the repo is placed: `i.e.: cd ZookeeperMessaging`
+2. Build the image with docker, be careful with the name (`zookeepermessaging`). The command should be similar to: `sudo docker build -t zookeepermessaging .`
+3. Execute the script zkapp.sh `./zkapp.sh`
+4. Access with the browser to the following url: `localhost:8080`
+
+### With everything installed on the system (linux)
 
 1. Download/clone/fork repository and move inside the folder.
 2. Compile project with maven `mvn clean install`
