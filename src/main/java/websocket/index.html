@@ -16,7 +16,7 @@
       #online_users_view { background: #90EE90; height: 100%; position: relative; }
       #online_users_view h3 { max-height: 10%; margin: 5%; }
       #online_users_view #registration_name { background: #90EE90; bottom: 0; display: block;border: 0; text-align: center; padding: 10px; width: 100%; position: absolute; }
-      #online_users_view #registration_name #username { font-size: bold; }
+      #online_users_view #registration_name #username { font-weight: bold; font-size: large;}
       .online_users { background: #f2f2f2; max-height: 80%; list-style-type: none; margin: 0; padding: 0; overflow:hidden; overflow-y:scroll; }
       .online_users li:first-child { border-top: 1px solid; }
       .online_users li { padding: 2% 20% 2% 20%; border-bottom: 1px solid; }
@@ -24,14 +24,17 @@
 
       #chat_view { height: 100%; position: relative; background: #F5F5DC;}
       #chat { background: #000; padding: 10px; position: absolute; bottom: 0; width: 100%; }
-      #chat #dest { margin:0 1% 0 1%; width: 10%; position: relative;}
-      #chat #msg { margin: 0 1% 0 1%; width: 65%; position: relative;}
+      #chat #msg { margin: 0 1% 0 1%; width: 75%; position: relative;}
       #chat button { width: 18%; background: rgb(130, 224, 255); border: none; height: 40px; margin: 0 1% 0 1% 0; position: relative;}
       #chat button::after {content: " Send!";}
       #messages ul { list-style-type: none; margin: 0; padding: 0; }
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
       #messages ul { margin-bottom: 40px; }
+
+      .attention {background: #babf77 !important; }
+      .attention:hover {background: #9fa271 !important; }
+      .notconnected, .notconnected:hover { background: #ad314f !important;}
 
 
       @media only screen and (max-width: 600px){
@@ -85,7 +88,6 @@
       <div id="chat_view" class="w3-twothird w3-content">
         <div id="messages"></div>
         <form action="" style="background: white; display:inline-block" id="chat" onsubmit="return false;">
-          <input id="dest" autocomplete="off" placeholder="Dest" />
           <input id="msg" autocomplete="off" placeholder="Message"/>
           <button id="msg_button"><i class="fa fa-paper-plane"></i></button>
         </form>
@@ -99,7 +101,6 @@
           var ws_users = new WebSocket("ws://localhost:48081/");
           var online_users = {};
           var chat = false;
-
 
 
           ws.onopen = function() {
@@ -133,7 +134,7 @@
 
           function manage_chat(message){
             var message_user = 'messages_'+message['sender'];
-            console.log(message);
+            console.log(user != message['sender'], $('.'+message['sender']));
 
             if(typeof $('#'+message_user)[0] == "undefined"){
               $('#messages').append($('<ul id=\"'+message_user+'\">'));
@@ -143,6 +144,10 @@
             if(message['dest'] && message['message']){
                 $('#'+message_user).append($('<li>').text(message['sender']+": "+message['message']));
                 window.scrollTo(0, document.body.scrollHeight);
+                if(user != message['sender']){
+                  $('.'+message['sender']).text(message['sender'] + ' - new message!')
+                  $('.'+message['sender']).addClass('attention');
+                }
             }
             else
                 alert("Error in chat reception");
@@ -191,16 +196,35 @@
             console.log("Opened!");
         };
 
+        var online_user_arrays = new Array(0);
+
         ws_users.onmessage = function (data) {
             var message = JSON.parse(data['data']);
+
+            var current_users_array = message['users'];
             console.log("Received Message. In the field data:", data['data']);
 
-            $('.online_users').empty();
+            current_users_array.splice( $.inArray($('#username').text(), current_users_array), 1 );  // Removing register user from list
 
-            for (let index = 0; index <  message['users'].length; ++index)
-              if($('#username').text() != message['users'][index]) // Removing register user from list
-                $('.online_users').append($('<li>').text(message['users'][index]));
+            for (let index = 0; index <  current_users_array.length; ++index){
+              if(typeof $('.'+current_users_array[index])[0] == 'undefined'){
+                  $('.online_users').append($('<li class="'+current_users_array[index]+'">').text(current_users_array[index]));
+                  online_user_arrays.push(current_users_array[index]);
+              }
+              else if(($('.'+ current_users_array[index])[0].classList.contains('notconnected'))){
+                $('.'+current_users_array[index]).removeClass('notconnected');
+                $('.'+current_users_array[index]).text(current_users_array[index]);
+              }
+            }
 
+            // Checking if users lost the connection
+            for (let index = 0; index <  online_user_arrays.length; ++index){
+                 if(message['users'].indexOf(online_user_arrays[index]) == -1){
+                    console.log(online_user_arrays[index], 'not found', online_user_arrays, 'of', current_users_array);
+                    $('.'+online_user_arrays[index]).addClass('notconnected');
+                    $('.'+online_user_arrays[index]).text(online_user_arrays[index] + " - lost connection!!");
+                  }
+            }
         };
 
         ws_users.onclose = function(){
@@ -221,7 +245,7 @@
           if(user != 'none')
             $('#messages_'+user).css({'display':'none'});
 
-          user = $(this)[0].innerHTML;
+          user = $(this).attr("class").split(" ")[0];
 
           if(typeof $('#messages_'+user)[0] == "undefined"){
             $('#messages').append($('<ul id=\"messages_'+user+'\">'));
@@ -229,6 +253,8 @@
           }
 
           $('#messages_'+user).css({'display':'block'});
+          $('.'+user).removeClass('attention');
+          $('.'+user).text(user);
 
           console.log("Changed to conversation with ", user);
         });
