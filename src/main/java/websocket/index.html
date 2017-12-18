@@ -28,6 +28,7 @@
       #chat button { width: 18%; background: rgb(130, 224, 255); border: none; height: 40px; margin: 0 1% 0 1% 0; position: relative;}
       #chat button::after {content: " Send!";}
       #messages ul { list-style-type: none; margin: 0; padding: 0; }
+      #messages li.mymessage { text-align: right;}
       #messages li { padding: 5px 10px; }
       #messages li:nth-child(odd) { background: #eee; }
       #messages ul { margin-bottom: 40px; }
@@ -183,6 +184,7 @@
                 msg: $('#msg').val()
             };
             if(chat && user != 'none') {
+                $('#messages_'+user).append($('<li class="mymessage">').text($('#username').text()+": "+$('#msg').val()));
                 $('#msg').val('');
                 ws.send(JSON.stringify(jsonObject));
             }
