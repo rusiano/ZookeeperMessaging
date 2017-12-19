@@ -21,6 +21,7 @@
       .online_users li:first-child { border-top: 1px solid; }
       .online_users li { padding: 2% 20% 2% 20%; border-bottom: 1px solid; }
       .online_users li:hover { background: #e4e7e7; }
+      .online_users .selected_user { font-weight: bold; }
 
       #chat_view { height: 100%; position: relative; background: #F5F5DC;}
       #chat { background: #000; padding: 10px; position: absolute; bottom: 0; width: 100%; }
@@ -35,7 +36,25 @@
 
       .attention {background: #babf77 !important; }
       .attention:hover {background: #9fa271 !important; }
-      .notconnected, .notconnected:hover { background: #ad314f !important;}
+      .notconnected, .notconnected:hover { background: #ad314f !important; }
+      .hidden { display: none; }
+
+
+      .alert { padding: 20px; background-color: #f44336; color: white; }
+
+      .closebtn { margin-left: 15px;
+          color: white;
+          font-weight: bold;
+          float: right;
+          font-size: 22px;
+          line-height: 20px;
+          cursor: pointer;
+          transition: 0.3s;
+      }
+
+      .closebtn:hover { color: black; }
+
+
 
 
       @media only screen and (max-width: 600px){
@@ -65,13 +84,13 @@
               <input class="w3-input w3-border" style="background: #eee;" name="username" type="text" placeholder="Introduce your username">
           </div>
         </div>
-        <div style="float: left; padding-left: 10%">
+        <div>
+          <div id="register_warning" class="alert hidden">
+            <span class="closebtn" onclick="this.parentElement.classList.add('hidden');">&times;</span>
+            <strong>Warning!</strong> Already register (look at the right part!)
+          </div>
           <button class="w3-button w3-block w3-section" id="register_button">
-          <i class="fa fa-paper-plane"></i> Sign In!</button>
-        </div>
-        <div style="float: right; padding-right: 10%">
-          <button class="w3-button w3-block w3-section" id="register2_button">
-          <i class="fa fa-paper-plane"></i> Sign Up!</button>
+          <i class="fa fa-paper-plane"></i> Login!</button>
         </div>
       </div>
       <div class="w3-third w3-container w3-padding-64" style="margin-left: 10%;">
@@ -116,6 +135,9 @@
                 manage_register(message);
               else if(message['type']=='chat')
                 manage_chat(message);
+              else if(message['type']=='error')
+                if(message['additional_message']="username already online")
+                   $('#register_warning').removeClass('hidden');
               else
                 console.log(message);
           };
@@ -244,8 +266,10 @@
         var user = "none";
         $('body').on('click', '.online_users li', function(){
           // Hide the chat of previous user
-          if(user != 'none')
+          if(user != 'none'){
             $('#messages_'+user).css({'display':'none'});
+            $('.'+user).removeClass('selected_user');
+          }
 
           user = $(this).attr("class").split(" ")[0];
 
@@ -256,6 +280,7 @@
 
           $('#messages_'+user).css({'display':'block'});
           $('.'+user).removeClass('attention');
+          $('.'+user).addClass('selected_user');
           $('.'+user).text(user);
 
           console.log("Changed to conversation with ", user);
