@@ -228,6 +228,7 @@
             var current_users_array = message['users'];
             console.log("Received Message. In the field data:", data['data']);
 
+            if($('#username').text() != "") // If there is a user registered
             current_users_array.splice( $.inArray($('#username').text(), current_users_array), 1 );  // Removing register user from list
 
             for (let index = 0; index <  current_users_array.length; ++index){

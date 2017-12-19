@@ -17,6 +17,7 @@ Two different ways
 1. Move to the folder where the repo is placed: `i.e.: cd ZookeeperMessaging`
 2. Build the image with docker, be careful with the name (`zookeepermessaging`). The command should be similar to: `sudo docker build -t zookeepermessaging .`
 3. Execute the script zkapp.sh `./zkapp.sh`
+  - The script will start docker, mount the folder in /home/dev, and will start the script inside-container.sh
 4. Access with the browser to the following url: `localhost:8080`
 
 ### With everything installed on the system (linux)

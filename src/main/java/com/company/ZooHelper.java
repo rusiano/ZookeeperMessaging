@@ -91,12 +91,15 @@ public class ZooHelper {
 
     static String getMessage(String nodeId) {
         String message = nodeId.split(">")[1].replaceAll("[0-9]{10}", "");
-        try {
-            long time = SDF.parse(nodeId.split(">")[2]).getTime();
-            long elapsedTime = new Date().getTime() - time;
-            PerformanceEvaluator.recordElapsedTime(elapsedTime);
-        } catch (ParseException e) {
-            e.printStackTrace();
+
+        if(nodeId.split(">").length >= 3) {
+            try {
+                long time = SDF.parse(nodeId.split(">")[2]).getTime();
+                long elapsedTime = new Date().getTime() - time;
+                PerformanceEvaluator.recordElapsedTime(elapsedTime);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
         }
         return message;
     }

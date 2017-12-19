@@ -12,7 +12,7 @@
 # Start java processes
 cd /home/dev
 
-if [ ! -d "/home/dev/target/dependency" ]; then
+if [ ! -f "/home/dev/target/ZookeeperMessaging-1.0-SNAPSHOT.jar" ]; then
   echo ">> Downloading all required dependencies"
   mvn clean install
   mvn dependency:go-offline
