@@ -362,7 +362,7 @@ public class Worker implements Watcher {
             return;
         }
 
-        zoo.create("/queue/" + idReceiver + "/" + this.id + ":"
+        zoo.create("/queue/" + idReceiver + "/" + this.id + ">"
                 + message, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
         System.out.println(ZooHelper.timestamp());
     }

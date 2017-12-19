@@ -5,12 +5,15 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class ZooHelper {
+
+    private static final SimpleDateFormat SDF = new SimpleDateFormat("HH:mm:ss.SSS");
 
     interface Codes {
         byte[] EXCEPTION = "-1".getBytes();
@@ -83,11 +86,19 @@ public class ZooHelper {
     }
 
     static String getSender(String nodeId) {
-        return nodeId.split(":")[0];
+        return nodeId.split(">")[0];
     }
 
     static String getMessage(String nodeId) {
-        return nodeId.split(":")[1].replaceAll("[0-9]{10}", "");
+        String message = nodeId.split(">")[1].replaceAll("[0-9]{10}", "");
+        try {
+            long time = SDF.parse(nodeId.split(">")[2]).getTime();
+            long elapsedTime = new Date().getTime() - time;
+            PerformanceEvaluator.recordElapsedTime(elapsedTime);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return message;
     }
 
     static String timestamp() {
