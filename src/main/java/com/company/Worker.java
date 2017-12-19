@@ -326,7 +326,7 @@ public class Worker implements Watcher {
             if (unreadMessages.size() > 0) {
                 for (String message : unreadMessages) {
                     ZooHelper.print("<INFO> New Unread Message: "
-                            + message.split(":")[1].replaceAll("[0-9]{10}", ""));
+                            + message.split(">")[1].replaceAll("[0-9]{10}", ""));
                 }
             }
         } catch (KeeperException | InterruptedException e) {
@@ -364,14 +364,13 @@ public class Worker implements Watcher {
 
         zoo.create("/queue/" + idReceiver + "/" + this.id + ">"
                 + message, ZooHelper.Codes.NEW_CHILD, ZooDefs.Ids.OPEN_ACL_UNSAFE, CreateMode.EPHEMERAL_SEQUENTIAL);
-        System.out.println(ZooHelper.timestamp());
     }
 
     /**
     * The method process a message sent to the process and detected by the watcher.
     */
     public void read(String sender, String message){
-        ZooHelper.print("READ METHOD: " + sender  + ": " +  message);
+        //ZooHelper.print(sender  + ": " +  message);
     }
 
     // When clients wants to leave => the zookeeper instance kills ephemeral nodes and make invalid the session
@@ -433,6 +432,9 @@ public class Worker implements Watcher {
         String triggerPath = watchedEvent.getPath();
         byte[] triggerCode = zooHelper.getCode(triggerPath);
 
+        //if (triggerPath == null)
+        //    return;
+
         boolean newEnrollmentRequestResult = triggerPath.contains("/enroll")
                 && ( triggerEvent == EventType.NodeDataChanged );
         boolean newQuitRequestResult = triggerPath.contains("/quit")
@@ -483,9 +485,10 @@ public class Worker implements Watcher {
         // NEW MESSAGE RECEIVED
         if (newMessageReceived) {
             try {
+                PerformanceEvaluator.readMessages++;
                 String nodeId = zoo.getChildren(triggerPath, false).get(0);
+                //ZooHelper.print("New message received at " + nodeId);
                 this.read(ZooHelper.getSender(nodeId), ZooHelper.getMessage(nodeId));
-                //ZooHelper.print(ZooHelper.getSender(nodeId) + ": " + ZooHelper.getMessage(nodeId));
 
                 // after having read the message, delete it and set the watcher for the next one
                 zoo.delete(triggerPath + "/" + nodeId, -1);

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
@@ -90,17 +91,21 @@ public class ZooHelper {
     }
 
     static String getMessage(String nodeId) {
+
         String message = nodeId.split(">")[1].replaceAll("[0-9]{10}", "");
 
-        if(nodeId.split(">").length >= 3) {
-            try {
-                long time = SDF.parse(nodeId.split(">")[2]).getTime();
-                long elapsedTime = new Date().getTime() - time;
-                PerformanceEvaluator.recordElapsedTime(elapsedTime);
-            } catch (ParseException e) {
-                e.printStackTrace();
-            }
+        try {
+            String stringTime = nodeId.split(">")[2];
+            long time = Long.parseLong(stringTime);
+            long elapsedTime = new Date().getTime() - time;
+
+            PerformanceEvaluator.totalReceivingTime += elapsedTime;
+            PerformanceEvaluator.receivedMessages++;
+
+        } catch (ArrayIndexOutOfBoundsException ignored) {
+            // in case we are not testing there is not another field
         }
+
         return message;
     }
 
@@ -112,5 +117,5 @@ public class ZooHelper {
         System.out.println(timestamp() + message);
     }
 
-    
+
 }
