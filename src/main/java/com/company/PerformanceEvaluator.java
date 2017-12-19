@@ -4,7 +4,6 @@ import org.apache.zookeeper.KeeperException;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 
 public class PerformanceEvaluator {
@@ -19,15 +18,23 @@ public class PerformanceEvaluator {
 
     private static Worker[] workers = new Worker[N_USERS];
 
-    private static long test1Time = 0;
-    private static int test1NMessages = 0;
-    private static long initElapsedTime;
-    private static long endElapsedTime;
+    public static long totalReceivingTime = 0;
+    public static int receivedMessages = 0;
 
     private static long totalEnrollingTime = 0;
+    public static int readMessages = 0;
 
     public static void main(String args[]) {
 
+
+        //testEnrollmentSpeed();
+
+        testMessageSpeed(5);
+
+
+    }
+
+    private static void testEnrollmentSpeed() {
 
         for (int i = 0; i < N_USERS; i++) {
             try {
@@ -46,34 +53,53 @@ public class PerformanceEvaluator {
             }
         }
 
-        System.out.println("Average");
-
-        // All users registered, we can start sending messages
-        test1();
-
+        System.out.println("Average enrolling time per user: " + totalEnrollingTime / N_USERS + "ms");
+        System.out.println("Total enrolling time per " + N_USERS + "users: " + totalEnrollingTime + "ms");
 
     }
 
     // Send 1000 messages as fast as possible between two users.
+    // Print read messages
     // Print avg time per message
-    private static void test1() {
+    // Print total elapsed time
+    private static void testMessageSpeed(long interval) {
 
-        for (int message = 0; message < N_MESSAGES; message++) {
+        try {
+            Worker w1 = new Worker(ZooHelper.getConnection(), "w1");
+            Worker w2 = new Worker(ZooHelper.getConnection(), "w2");
 
-            try {
-                workers[0].write(workers[1].getId(), LOREM_IPSUM + ">" + SDF.format(new Date()));
-            } catch (KeeperException | InterruptedException e) {
-                e.printStackTrace();
+            w1.enroll();
+            Thread.sleep(50);
+            w1.login();
+            Thread.sleep(50);
+            w2.enroll();
+            Thread.sleep(50);
+            w2.login();
+            Thread.sleep(50);
+
+            for (int message = 0; message < N_MESSAGES; message++) {
+                w1.write(w2.getId(), message + ">" + new Date().getTime() + ">");
+                Thread.sleep(interval);
             }
 
+            try {
+                System.out.println("===================================================================================");
+                System.out.println("Sent messages: " + N_MESSAGES);
+                System.out.println("Read Messages: " + readMessages);
+
+                System.out.println("Avg receiving time per message: " + totalReceivingTime / readMessages + "ms");
+                System.out.println("Total time for receiving " + readMessages + " messages: " + totalReceivingTime + "ms");
+            } catch (ArithmeticException ignored) {
+                System.out.println("Aritmetic error. receivedMessages = " + receivedMessages);
+            }
+
+            //w1.quit();
+            //w2.quit();
+        } catch (IOException | KeeperException | InterruptedException e) {
+            e.printStackTrace();
         }
 
-        System.out.println("Avg receiving time per message: " + test1Time / test1NMessages + "ms");
-        System.out.println("Total time for receiving " + N_MESSAGES + " messages: " + test1Time + "ms");
+
     }
 
-    static void recordElapsedTime(long elapsedTime) {
-        test1Time += elapsedTime;
-        test1NMessages++;
-    }
 }
