@@ -3,6 +3,7 @@ package com.company;
 import java.io.IOException;
 import java.util.List;
 import java.util.Scanner;
+
 import org.apache.zookeeper.*;
 
 class Master{
@@ -17,7 +18,9 @@ class Master{
 
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
 
-        zoo = ZooHelper.getConnection();    // Connects to ZooKeeper service
+        String ipAddrPort = ZooHelper.validateAddressParams(args);
+
+        zoo = ZooHelper.getConnection(ipAddrPort);    // Connects to ZooKeeper service
         if (zoo == null) { ZooHelper.print("<ERROR> It was impossible to establish a connection to Zookeeper. Exiting..."); return;}
 
         String auth = "user:pwd";

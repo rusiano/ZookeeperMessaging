@@ -13,8 +13,8 @@ public class SocketConnectedWorker extends Worker {
     private String id;
     private WebSocket client;
 
-    public SocketConnectedWorker(String id, WebSocket client) throws IOException, InterruptedException {
-        super(ZooHelper.getConnection(), id);
+    public SocketConnectedWorker(String id, WebSocket client, String host) throws IOException, InterruptedException {
+        super(ZooHelper.getConnection(host), id);
         this.id = id;
         this.client = client;
     }

@@ -17,6 +17,7 @@ if [ ! -f "/home/dev/target/ZookeeperMessaging-1.0-SNAPSHOT.jar" ]; then
   mvn clean install
   mvn dependency:go-offline
 fi
+
 mvn exec:java -Dexec.mainClass="websocket.OnlineUserKeepAlive" &
 mvn exec:java -Dexec.mainClass="com.company.Master" &
 mvn exec:java -Dexec.mainClass="websocket.KafkaWorkerFactory"

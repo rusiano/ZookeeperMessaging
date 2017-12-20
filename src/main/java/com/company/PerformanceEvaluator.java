@@ -38,7 +38,7 @@ public class PerformanceEvaluator {
 
         for (int i = 0; i < N_USERS; i++) {
             try {
-                workers[i] = new Worker(ZooHelper.getConnection(), USER+i);
+                workers[i] = new Worker(ZooHelper.getConnection("localhost"), USER+i);
 
                 long initEnrollingTime = new Date().getTime();
                 while (!workers[i].enroll()) {
@@ -65,8 +65,8 @@ public class PerformanceEvaluator {
     private static void testMessageSpeed(long interval) {
 
         try {
-            Worker w1 = new Worker(ZooHelper.getConnection(), "w1");
-            Worker w2 = new Worker(ZooHelper.getConnection(), "w2");
+            Worker w1 = new Worker(ZooHelper.getConnection("localhost"), "w1");
+            Worker w2 = new Worker(ZooHelper.getConnection("localhost"), "w2");
 
             w1.enroll();
             Thread.sleep(50);

@@ -16,19 +16,24 @@ public class OnlineUserKeepAlive extends WebSocketServer {
     private final static int port = 48081;
     private List<WebSocket> keepalive_list;
     private ZooKeeper zoo;
+    private String keeperhost;
 
 
-    public OnlineUserKeepAlive(){
+    public OnlineUserKeepAlive(String keeperhost){
         super(new InetSocketAddress(port));
         this.keepalive_list = new ArrayList<WebSocket>();
+        this.keeperhost = keeperhost;
         try {
-            this.zoo = ZooHelper.getConnection();
+            this.zoo = ZooHelper.getConnection(keeperhost);
         } catch (Exception e) { e.printStackTrace(); }
     }
 
 
     public static void main(String args[]){
-        OnlineUserKeepAlive watcher = new OnlineUserKeepAlive();
+
+        String ipAddrPort = ZooHelper.validateAddressParams(args);
+
+        OnlineUserKeepAlive watcher = new OnlineUserKeepAlive(ipAddrPort);
         System.out.println("Listening on port"+ watcher.getAddress().toString());
         watcher.execution();
     }

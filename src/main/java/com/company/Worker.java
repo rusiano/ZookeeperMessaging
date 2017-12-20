@@ -64,6 +64,20 @@ public class Worker implements Watcher {
 
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
 
+        String ipAddrPort = null;
+
+        if(args.length > 1){
+            System.out.println(" >> Only need localIP:port parameter");
+            System.exit(1);
+        }
+        else if(args.length == 1)
+            ipAddrPort = args[0];
+        else
+            ipAddrPort = "localhost";
+
+
+        System.exit(1);
+
         Worker user;
 
         do {
@@ -94,7 +108,7 @@ public class Worker implements Watcher {
                         break;
                     }
 
-                    user = new Worker(ZooHelper.getConnection(), inputId);
+                    user = new Worker(ZooHelper.getConnection(ipAddrPort), inputId);
 
                     // if it has to sign up, enroll it first, otherwise assume the username is ok
                     user.setUsernameOk(!toEnroll || user.enroll());
@@ -135,7 +149,7 @@ public class Worker implements Watcher {
                 }
 
                 if (choice.equals(ONLINE_USERS)) {
-                    List<String> onlineUsers = getOnlineUsers();
+                    List<String> onlineUsers = user.getOnlineUsers();
                     if (onlineUsers.size() == 0) {
                         System.out.println(">>> No Users Online! ");
                         break;
@@ -206,14 +220,14 @@ public class Worker implements Watcher {
     }
 
     /**
-     * Static method that returns the list of users currently online.
+     * Method that returns the list of users currently online.
      * @return The list containing all the ID's (String) of the online users.
      * @throws KeeperException -
      * @throws InterruptedException -
      * @throws IOException -
      */
-    public static List<String> getOnlineUsers() throws KeeperException, InterruptedException, IOException {
-        return ZooHelper.getConnection().getChildren("/online", false);
+    public List<String> getOnlineUsers() throws KeeperException, InterruptedException, IOException {
+        return zoo.getChildren("/online", false);
 
     }
 

@@ -16,6 +16,7 @@ public class KafkaSocketConnectedWorker extends SocketConnectedWorker implements
     private String enrollUserPath, quitUserPath, onlineUserPath;
     private ZooKeeper zoo;
     private ZooHelper zooHelper;
+    private String kafkaHost;
 
 
     private boolean logged;
@@ -25,9 +26,10 @@ public class KafkaSocketConnectedWorker extends SocketConnectedWorker implements
 
 
 
-    public KafkaSocketConnectedWorker(String id, WebSocket client) throws IOException, InterruptedException {
-        super(id, client);
+    public KafkaSocketConnectedWorker(String id, WebSocket client, String keeperhost, String kafkahost) throws IOException, InterruptedException {
+        super(id, client, keeperhost);
         this.id = id;
+        this.kafkaHost = kafkahost;
 
         this.logged = false;
         this.topicName = id;
@@ -35,7 +37,7 @@ public class KafkaSocketConnectedWorker extends SocketConnectedWorker implements
 
         //Configure the Producer
         this.configPropertiesProducer = new Properties();
-        this.configPropertiesProducer.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,"localhost:9092");
+        this.configPropertiesProducer.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         this.configPropertiesProducer.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.ByteArraySerializer");
         this.configPropertiesProducer.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG,"org.apache.kafka.common.serialization.StringSerializer");
 
@@ -52,7 +54,7 @@ public class KafkaSocketConnectedWorker extends SocketConnectedWorker implements
 
     @Override
     public void write(String idReceiver, String message) {
-        ProducerRecord<String, String> rec = new ProducerRecord<String, String>(idReceiver,this.id+":"+message);
+        ProducerRecord<String, String> rec = new ProducerRecord<String, String>(idReceiver,this.id+">"+message);
         producer.send(rec);
     }
 
@@ -69,6 +71,7 @@ public class KafkaSocketConnectedWorker extends SocketConnectedWorker implements
 
     @Override
     public boolean login() {
+        System.out.println("try to login");
         if(!logged)
             logged = super.login();
         else
@@ -83,9 +86,7 @@ public class KafkaSocketConnectedWorker extends SocketConnectedWorker implements
         return super.disconnect();
     }
 
-    @Override
     public void run() {
-
         //Figure out where to start processing messages from
         kafkaConsumer = new KafkaConsumer<String, String>(configPropertiesConsumer);
         kafkaConsumer.subscribe(Arrays.asList(topicName));
@@ -107,5 +108,12 @@ public class KafkaSocketConnectedWorker extends SocketConnectedWorker implements
             kafkaConsumer.close();
             System.out.println("After closing KafkaConsumer");
         }
+    }
+
+
+    @Override
+    public void process(WatchedEvent ev){
+        System.out.println("-------------\n\n-------------- evaluating");
+        super.process(ev);
     }
 }

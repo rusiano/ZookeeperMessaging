@@ -5,12 +5,11 @@ import org.apache.zookeeper.Watcher;
 import org.apache.zookeeper.ZooKeeper;
 
 import java.io.IOException;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+
 
 public class ZooHelper {
 
@@ -26,7 +25,7 @@ public class ZooHelper {
     final static long TIMEOUT_IN_NANOS = (long) (30 * Math.pow(10, 9)); // = 30 secs
 
     // TODO: change final localhost into a custom ip:port adress (input by the user)
-    private final static String LOCALHOST = "localhost:2181";
+    private static String LOCALHOST = "localhost:2181";
 
     private ZooKeeper zoo;
 
@@ -42,7 +41,10 @@ public class ZooHelper {
         this.zoo = zoo;
     }
 
-    private static ZooKeeper getConnection(String host) throws IOException, InterruptedException {
+    public static ZooKeeper getConnection(String host) throws IOException, InterruptedException {
+        if(host == null || host.equals("localhost") || host.equals("local")  || host.equals("") || host.split(":").length < 2)
+            host = LOCALHOST;
+
         int sessionTimeout = 3000;
         final CountDownLatch connectionLatch = new CountDownLatch(1);
 
@@ -57,10 +59,6 @@ public class ZooHelper {
         connectionLatch.await(1, TimeUnit.SECONDS);
 
         return zoo;
-    }
-
-    public static ZooKeeper getConnection() throws IOException, InterruptedException {
-        return getConnection(LOCALHOST);
     }
 
 
@@ -117,5 +115,15 @@ public class ZooHelper {
         System.out.println(timestamp() + message);
     }
 
+    public static String validateAddressParams(String[] args){
+        if(args.length > 1){
+            System.out.println(" >> Only need localIP:port parameter");
+            System.exit(1);
+        }
+        else if(args.length == 1)
+            return args[0];
+
+        return "localhost";
+    }
 
 }

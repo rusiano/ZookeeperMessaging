@@ -1,5 +1,6 @@
 package websocket;
 
+import com.company.ZooHelper;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
@@ -17,14 +18,20 @@ public class WorkerFactory extends WebSocketServer{
 
     private final static int port = 48080;
     private int last_worker_port;
+    private String hostkeeper;
     private HashMap<String, SocketConnectedWorker> workers_map;
 
 
-    public WorkerFactory() throws IOException, InterruptedException {
+    public WorkerFactory(String hostkeeper) throws IOException, InterruptedException {
         super(new InetSocketAddress(port));
         this.last_worker_port = port+1;
         this.workers_map  = new HashMap<String, SocketConnectedWorker>();
+        this.hostkeeper = hostkeeper;
 
+    }
+
+    public String getHostkeeper(){
+        return this.hostkeeper;
     }
 
     @Override
@@ -43,14 +50,14 @@ public class WorkerFactory extends WebSocketServer{
     protected SocketConnectedWorker create_worker(String id, WebSocket websocket){
         SocketConnectedWorker new_worker = null;
         try {
-            new_worker = new SocketConnectedWorker(id, websocket);
+            new_worker = new SocketConnectedWorker(id, websocket, this.hostkeeper);
         } catch (Exception e) {
             e.printStackTrace();
         }
         return new_worker;
     }
 
-    private void manage_registration(WebSocket webSocket, JSONObject message){
+    protected void manage_registration(WebSocket webSocket, JSONObject message){
         JSONObject reply = new JSONObject();
         if( message.get("username") == null || "".equals(message.get("username"))) {
             reply.put("status", "error");
@@ -113,7 +120,9 @@ public class WorkerFactory extends WebSocketServer{
 
     public static void main(String[] args) throws IOException, InterruptedException, KeeperException {
 
-       final WorkerFactory factory = new WorkerFactory();
+       String ipAddrPort = ZooHelper.validateAddressParams(args);
+
+       final WorkerFactory factory = new WorkerFactory(ipAddrPort);
 
        System.out.println("Stating");
 
